@@ -1,0 +1,36 @@
+<header id="topbar">
+
+  <button class="topbar-toggle" id="sidebar-toggle"
+          (click)="toggleSidebar()" aria-label="Menú">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <div class="topbar-title">
+    <h6>Nombre de Equipo de Trabajo</h6>
+    <small>Bienvenido de nuevo, Usuario</small>
+  </div>
+
+  <div class="topbar-search">
+    <i class="bi bi-search"></i>
+    <input type="text" placeholder="Buscar…" />
+  </div>
+
+  <div class="topbar-actions">
+    <button class="icon-btn">
+      <i class="bi bi-bell"></i>
+      <span class="dot"></span>
+    </button>
+
+    <div class="user-chip">
+      <a routerLink="/perfil" class="user-chip" style="text-decoration: none;">
+      <div class="user-avatar-placeholder">US</div>
+      <div class="user-info">
+        <div class="user-name">Usuario</div>
+        <div class="user-role">Administrador</div>
+      </div>
+      <i class="bi bi-chevron-down ms-1" style="font-size:.72rem;"></i>
+      </a>
+    </div>
+  </div>
+
+</header>

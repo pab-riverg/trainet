@@ -1,0 +1,12 @@
+<div class="app-shell">
+  <app-nav></app-nav>
+   <div id="sidebar-overlay" (click)="closeSidebar()"></div>
+
+  <div class="shell-content">
+    <app-header></app-header>
+    <main id="main">
+      <router-outlet></router-outlet>
+    </main>
+    <app-footer></app-footer>
+  </div>
+</div>

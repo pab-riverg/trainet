@@ -1,0 +1,210 @@
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <a href="javascript:void(0)" class="topbar-brand">
+  <img src="/img/trainet_logo_blue.png" alt="TRAINET" style="height: 42px; width: auto;" />
+    </a>
+  <nav class="topbar-nav">
+    <a href="javascript:void(0)">Inicio</a>
+    <a href="javascript:void(0)">Sobre Trainet</a>
+    <a href="javascript:void(0)">Descargar</a>
+  </nav>
+  <div class="topbar-actions">
+    <button class="globe-btn"><i class="bi bi-globe2"></i></button>
+    <a href="/login" class="btn-ingresa">Ingresa Ahora</a>
+  </div>
+  <div class="topbar-mobile-nav">
+    <button class="globe-btn" style="color:var(--navy);"><i class="bi bi-globe2"></i></button>
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════
+     DESKTOP
+═══════════════════════════════════════ -->
+<div class="page-wrapper">
+  <div class="panel-left">
+    <div class="auth-card">
+      <h2>Regístrate en Trainet</h2>
+      <p class="subtitle">Crea tu cuenta para comenzar.</p>
+      <a href="javascript:void(0)" class="btn-corporate mb-3">
+        <i class="bi bi-briefcase"></i> Registro Corporativo
+      </a>
+      <div class="divider">o</div>
+      <label class="field-label">Correo electrónico</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-envelope field-icon"></i>
+        <input type="email" placeholder="email@address.com" />
+      </div>
+      <label class="field-label">Contraseña</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-lock field-icon"></i>
+        <input type="password" id="reg-pw" placeholder="••••••••••" />
+        <button class="toggle-pw" onclick="togglePw('reg-pw',this)"><i class="bi bi-eye"></i></button>
+      </div>
+      <div class="check-row">
+        <input type="checkbox" id="newsletter" />
+        <label for="newsletter">Envío de noticias y novedades</label>
+      </div>
+      <button class="btn-primary-trainet">Registrar</button>
+      <p class="card-note" style="margin-top:.9rem;">
+        Al crear una cuenta aceptas los <a href="javascript:void(0)">Términos de Servicio</a> y la <a href="javascript:void(0)">Política de Privacidad</a>.
+      </p>
+      <p class="card-note">¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="auth-card">
+      <h2>Ingresa a tu Equipo de Trabajo</h2>
+      <p class="subtitle">Acceda a su equipo ingresando su correo y contraseña.</p>
+      <label class="field-label">Correo electrónico</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-envelope field-icon"></i>
+        <input type="email" placeholder="email@address.com" #emailDesktop />
+      </div>
+      <label class="field-label">Contraseña</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-lock field-icon"></i>
+        <input type="password" id="login-pw-d" placeholder="••••••••••" #passwordDesktop />
+        <button class="toggle-pw" onclick="togglePw('login-pw-d',this)"><i class="bi bi-eye"></i></button>
+      </div>
+      <div class="links-row">
+        <a href="javascript:void(0)">¿Olvidó la contraseña?</a>
+      </div>
+      <button class="btn-primary-trainet mb-2" (click)="login(emailDesktop.value, passwordDesktop.value)">Inicia Sesión</button>
+      @if (errorMsg) {
+        <p style="color: red;">{{ errorMsg }}</p>
+      }
+      <div class="remember-row">
+        <label class="toggle-switch">
+          <input type="checkbox" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span>Recuérdame</span>
+      </div>
+      <div class="divider">o</div>
+      <a href="/dashboard" class="btn-corporate">
+        <i class="bi bi-briefcase"></i> Ingreso Corporativo
+      </a>
+      <p class="id-note">¿No funciona tu ID? <a href="javascript:void(0)">Comunícate aquí</a></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     MOBILE — dos pantallas con scroll-snap
+═══════════════════════════════════════ -->
+<div class="mobile-shell">
+
+  <!-- Cabecera azul ÚNICA, fuera del scroll -->
+  <div class="mobile-fixed-header">
+    <button class="mobile-back-btn"><i class="bi bi-arrow-left"></i></button>
+    <div class="mobile-screen-title">TRAINET</div>
+  </div>
+
+  <div class="mobile-scroll-container" id="mobile-scroll">
+
+  <!-- PANTALLA 1: Login -->
+  <div class="mobile-screen" id="screen-login">
+
+    <!-- Hint: desliza hacia abajo para registrarse -->
+    <div class="scroll-hint">
+      <span>REGÍSTRATE</span>
+      <i class="bi bi-chevron-down"></i>
+    </div>
+
+    <div class="mobile-card">
+      <h2 style="font-size:1.35rem;font-weight:700;color:var(--navy);margin-bottom:.2rem;">
+        Ingresa a tu Equipo
+      </h2>
+      <p style="font-size:.84rem;color:var(--gray-400);margin-bottom:1.3rem;">
+        ¡Hola de nuevo! ¿Listo para trabajar?
+      </p>
+
+      <label class="field-label">Correo electrónico</label>
+      <div class="field-wrap">
+        <i class="bi bi-envelope field-icon"></i>
+        <input type="email" placeholder="email@address.com" #emailMobile />
+      </div>
+
+      <label class="field-label">Contraseña</label>
+      <div class="field-wrap">
+        <i class="bi bi-lock field-icon"></i>
+        <input type="password" id="login-pw-m" placeholder="••••••••••" #passwordMobile />
+        <button class="toggle-pw" onclick="togglePw('login-pw-m',this)"><i class="bi bi-eye"></i></button>
+      </div>
+
+      <button class="btn-primary-trainet mt-2" (click)="login(emailMobile.value, passwordMobile.value)">Iniciar Sesión</button>
+      @if (errorMsg) {
+        <p style="color: red;">{{ errorMsg }}</p>
+      }
+
+      <div class="links-row mt-2">
+        <a href="javascript:void(0)">¿Olvidó la contraseña?</a>
+        <a href="javascript:void(0)" class="register" onclick="scrollToRegister(event)">Regístrate aquí</a>
+      </div>
+
+      <div class="divider">o</div>
+
+      <a href="/dashboard" class="btn-corporate">
+        <i class="bi bi-briefcase"></i> Ingreso Corporativo
+      </a>
+
+      <p class="id-note">¿No funciona tu ID? <a href="javascript:void(0)">Comunícate aquí</a></p>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: Registro -->
+  <div class="mobile-screen" id="screen-register">
+
+    <div class="mobile-card">
+      <h2 style="font-size:1.35rem;font-weight:700;color:var(--navy);margin-bottom:.2rem;">
+        Crea tu cuenta
+      </h2>
+      <p style="font-size:.84rem;color:var(--gray-400);margin-bottom:1.3rem;">
+        Únete a Trainet y empieza hoy.
+      </p>
+
+      <a href="javascript:void(0)" class="btn-corporate mb-3">
+        <i class="bi bi-briefcase"></i> Registro Corporativo
+      </a>
+
+      <div class="divider">o</div>
+
+      <label class="field-label">Correo electrónico</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-envelope field-icon"></i>
+        <input type="email" placeholder="email@address.com" />
+      </div>
+
+      <label class="field-label">Contraseña</label>
+      <div class="field-wrap boxed">
+        <i class="bi bi-lock field-icon"></i>
+        <input type="password" id="reg-pw-m" placeholder="••••••••••" />
+        <button class="toggle-pw" onclick="togglePw('reg-pw-m',this)"><i class="bi bi-eye"></i></button>
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="newsletter-m" />
+        <label for="newsletter-m">Recibir noticias y novedades</label>
+      </div>
+
+      <button class="btn-primary-trainet">Registrar</button>
+
+      <p class="card-note" style="margin-top:.85rem;">
+        Al crear una cuenta aceptas los
+        <a href="javascript:void(0)">Términos de Servicio</a> y la <a href="javascript:void(0)">Política de Privacidad</a>.
+      </p>
+      <p class="card-note">
+        ¿Ya tienes cuenta? <a href="javascript:void(0)" onclick="scrollToLogin(event)">Inicia sesión aquí</a>
+      </p>
+    </div>
+  </div>
+
+</div><!-- /mobile-scroll-container -->
+</div><!-- /mobile-shell -->
+
+
+<div class="help-bubble"><i class="bi bi-question-lg"></i></div>
+
