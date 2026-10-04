@@ -1,0 +1,190 @@
+.perfil {
+  max-width: var(--contenido-max);
+  margin-inline: auto;
+}
+
+/* Dos columnas: identidad fija a la izquierda, formularios flexibles a la derecha. */
+.perfil-rejilla {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.perfil-rejilla .card-widget {
+  height: auto;
+}
+
+.perfil-columna {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+/* --- Tarjeta de identidad --- */
+.perfil-identidad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  text-align: center;
+}
+
+.perfil-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  margin-bottom: .4rem;
+  border-radius: 50%;
+  background: var(--app-acento-suave);
+  color: var(--app-titulo);
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+
+.perfil-nombre {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+  overflow-wrap: anywhere;
+}
+
+.perfil-email {
+  max-width: 100%;
+  margin-bottom: .25rem;
+  font-size: .85rem;
+  color: var(--app-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.perfil-divisor {
+  margin: 1rem 0;
+  border: none;
+  border-top: 1px solid var(--app-borde);
+  opacity: 1;
+}
+
+/* Filas etiqueta (izquierda, secundaria) / valor (derecha). */
+.perfil-filas {
+  margin: 0;
+}
+
+.perfil-fila {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 1rem;
+  padding: .3rem 0;
+}
+
+.perfil-fila dt {
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--app-texto-suave);
+  white-space: nowrap;
+}
+
+.perfil-fila dd {
+  margin: 0;
+  font-size: .88rem;
+  text-align: right;
+  color: var(--app-titulo);
+  overflow-wrap: anywhere;
+}
+
+.perfil-correo,
+.perfil-escribir {
+  color: var(--app-acento);
+  text-decoration: none;
+}
+
+.perfil-correo:hover,
+.perfil-correo:focus-visible,
+.perfil-escribir:hover,
+.perfil-escribir:focus-visible {
+  text-decoration: underline;
+}
+
+.perfil-escribir {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-top: .5rem;
+  font-size: .88rem;
+  font-weight: 600;
+}
+
+/* --- Formularios (columna derecha) --- */
+.perfil-boton {
+  width: auto;
+  display: inline-block;
+  margin-top: .25rem;
+}
+
+.perfil-columna form .mb-2 {
+  margin-bottom: .6rem !important;
+}
+
+.perfil-columna form p.small {
+  margin: .25rem 0 .5rem;
+}
+
+.perfil-password {
+  position: relative;
+}
+
+.perfil-password .form-control {
+  padding-right: var(--accion-tamano);
+}
+
+.perfil-ojo {
+  position: absolute;
+  top: 50%;
+  right: .25rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--accion-tamano);
+  height: var(--accion-tamano);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--accion-radio);
+  color: var(--accion-color);
+  font-size: var(--accion-icono);
+  cursor: pointer;
+}
+
+.perfil-ojo:hover {
+  color: var(--accion-hover-color);
+  background: var(--accion-hover-bg);
+}
+
+.perfil-ojo:focus-visible {
+  outline: 2px solid var(--accion-foco);
+  outline-offset: 1px;
+}
+
+/* Breakpoints de Bootstrap (convención en styles.css). < 992px: una columna, la tarjeta de datos arriba. */
+@media (max-width: 991.98px) {
+  .perfil-rejilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* < 576px: botones a todo el ancho y filas de datos que pueden envolver. */
+@media (max-width: 575.98px) {
+  .perfil-boton {
+    display: block;
+    width: 100%;
+  }
+
+  .perfil-fila dt {
+    white-space: normal;
+  }
+}

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from usuarios.models import Administrador, Directivo, EncargadoAdministrativo, Usuario
 
@@ -41,7 +42,7 @@ class Configuracion(models.Model):
 
 class ConfiguracionSistema(models.Model):
     id = models.AutoField(primary_key=True, db_column='id_configuracion_sistema')
-    clave = models.CharField(max_length=255)
+    clave = models.CharField(max_length=255, unique=True)
     valor = models.CharField(max_length=255)
     fo_mod_admin = models.ForeignKey(ModuloAdministracion, on_delete=models.CASCADE, db_column='fo_mod_admin')
 
@@ -67,12 +68,20 @@ class ModuloActivo(models.Model):
 class LogAuditoria(models.Model):
     id = models.AutoField(primary_key=True, db_column='id_log_auditoria')
     descripcion = models.CharField(max_length=255)
-    fecha_evento = models.DateField(auto_now_add=True)
-    fo_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='fo_usuario')
+    fecha_evento = models.DateField(auto_now_add=True, db_index=True)
+    # Momento exacto del evento (fecha_evento conserva solo el día).
+    fecha_hora = models.DateTimeField(default=timezone.now, db_index=True)
+    # Clave del evento (ver administracion/auditoria.py) y módulo de origen.
+    accion = models.CharField(max_length=40, blank=True, default='', db_index=True)
+    modulo = models.CharField(max_length=30, blank=True, default='', db_index=True)
+    ip = models.GenericIPAddressField(null=True, blank=True)
+    # Nulo cuando el evento no tiene usuario (por ejemplo, un inicio de sesión fallido).
+    fo_usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='fo_usuario')
     fo_mod_admin = models.ForeignKey(ModuloAdministracion, on_delete=models.CASCADE, db_column='fo_mod_admin')
 
     class Meta:
         db_table = 'log_auditoria'
+        ordering = ['-fecha_hora', '-id']
 
     def __str__(self):
         return self.descripcion

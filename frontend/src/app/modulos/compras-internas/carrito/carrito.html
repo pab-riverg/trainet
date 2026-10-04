@@ -1,0 +1,127 @@
+@if (carrito.numeroLineas() === 0) {
+  <div class="carrito-vacio">
+    <i class="bi bi-cart-x" aria-hidden="true"></i>
+    <p>Tu carrito está vacío.</p>
+    <button type="button" class="btn-primary-trainet" style="width:auto;" (click)="irATienda.emit()">
+      <i class="bi bi-shop" aria-hidden="true"></i> Ir a la tienda
+    </button>
+  </div>
+} @else {
+
+  <div class="carrito-layout">
+
+    <section class="carrito-lineas" aria-label="Artículos en el carrito">
+      @for (linea of carrito.lineas(); track linea.articulo.id) {
+        <article class="carrito-linea">
+
+          @if (linea.articulo.imagen) {
+            <img class="carrito-miniatura" [src]="linea.articulo.imagen" [alt]="linea.articulo.nombre" />
+          } @else {
+            <div class="carrito-miniatura carrito-miniatura-icono" aria-hidden="true">
+              <i class="bi {{ linea.articulo.categoria_icono || 'bi-box-seam' }}"></i>
+            </div>
+          }
+
+          <div class="carrito-linea-info">
+            <h3 class="carrito-nombre">{{ linea.articulo.nombre }}</h3>
+            <div class="text-muted small">{{ formatearPrecio(linea.articulo.precio_referencia) }} c/u</div>
+
+            <div class="carrito-controles">
+              <div class="cantidad-control" role="group" [attr.aria-label]="'Cantidad de ' + linea.articulo.nombre">
+                <button type="button" (click)="cambiarCantidad(linea, linea.cantidad - 1)"
+                        [disabled]="linea.cantidad <= 1"
+                        [attr.aria-label]="'Quitar una unidad de ' + linea.articulo.nombre">
+                  <i class="bi bi-dash" aria-hidden="true"></i>
+                </button>
+                <input type="number"
+                       min="1"
+                       max="99"
+                       [value]="linea.cantidad"
+                       (change)="cambiarCantidadDesdeCampo(linea, $event)"
+                       [attr.aria-label]="'Unidades de ' + linea.articulo.nombre" />
+                <button type="button" (click)="cambiarCantidad(linea, linea.cantidad + 1)"
+                        [disabled]="linea.cantidad >= 99"
+                        [attr.aria-label]="'Agregar una unidad de ' + linea.articulo.nombre">
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <app-boton-accion accion="quitar"
+                  [etiqueta]="'Quitar ' + linea.articulo.nombre + ' del carrito'"
+                  titulo="Quitar"
+                  (click)="carrito.quitar(linea.articulo.id)" />
+            </div>
+
+            @if (justificacionVisible(linea)) {
+              <label class="form-label small mt-2 mb-1" [for]="'just-' + linea.articulo.id">Justificación (opcional)</label>
+              <textarea [id]="'just-' + linea.articulo.id"
+                        class="form-control form-control-sm"
+                        rows="2"
+                        [value]="linea.justificacion"
+                        (input)="cambiarJustificacion(linea, $event)"></textarea>
+            } @else {
+              <button type="button" class="carrito-enlace" (click)="abrirJustificacion(linea.articulo.id)">
+                Agregar justificación
+              </button>
+            }
+          </div>
+
+          <div class="carrito-subtotal">{{ formatearPrecio(linea.cantidad * linea.articulo.precio_referencia) }}</div>
+
+        </article>
+      }
+    </section>
+
+    <aside class="carrito-resumen">
+      <h2 class="carrito-resumen-titulo">Resumen</h2>
+
+      <dl class="carrito-totales">
+        <dt>Artículos distintos</dt>
+        <dd>{{ carrito.numeroLineas() }}</dd>
+        <dt>Unidades</dt>
+        <dd>{{ carrito.unidades() }}</dd>
+        <dt class="carrito-total-etiqueta">Total estimado</dt>
+        <dd class="carrito-total-valor">{{ formatearPrecio(carrito.totalEstimado()) }}</dd>
+      </dl>
+      <p class="text-muted small">Los precios son de referencia; el valor final depende de la cotización del proveedor.</p>
+
+      <form [formGroup]="solicitudForm" (ngSubmit)="confirmar()" #f_solicitudForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+        <div class="mb-3">
+          <label class="form-label campo-obligatorio" for="compra-area">Área</label>
+          <input type="text" id="compra-area" class="form-control" formControlName="area" maxlength="255"
+                 placeholder="Ej.: Sistemas"
+           [class.is-invalid]="solicitudForm.controls.area.invalid && solicitudForm.controls.area.touched" />
+          @if (solicitudForm.controls.area.invalid && solicitudForm.controls.area.touched) {
+            <div class="text-danger small">El área es obligatoria.</div>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label" for="compra-nota">Nota general (opcional)</label>
+          <textarea id="compra-nota" class="form-control" rows="3" formControlName="nota"
+           [class.is-invalid]="solicitudForm.controls.nota.invalid && solicitudForm.controls.nota.touched"></textarea>
+        </div>
+
+        <button type="submit"
+                class="btn-primary-trainet"
+                [disabled]="carrito.numeroLineas() === 0 || enviando()">
+          {{ enviando() ? 'Enviando…' : 'Confirmar solicitud' }}
+        </button>
+          @if (f_solicitudForm.submitted && solicitudForm.invalid && solicitudForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+        @if (errorEnvio()) {
+          <p class="text-danger small mt-2">{{ errorEnvio() }}</p>
+        }
+      </form>
+
+      <button type="button" class="btn-corporate mt-2" (click)="irATienda.emit()">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Seguir comprando
+      </button>
+    </aside>
+
+  </div>
+
+}

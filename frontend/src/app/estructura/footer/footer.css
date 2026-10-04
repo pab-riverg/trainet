@@ -1,0 +1,67 @@
+/* Barra inferior móvil: solo existe < 768px (breakpoint md de Bootstrap; convención en styles.css).
+   Sus tokens (--barra-inferior-*) están en styles.css, con valores claro y oscuro. */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  align-items: stretch;
+  height: calc(var(--barra-inferior-alto) + env(safe-area-inset-bottom, 0px));
+  padding: .25rem .25rem env(safe-area-inset-bottom, 0px);
+  background: var(--barra-inferior-fondo);
+  border-top: 1px solid var(--barra-inferior-borde);
+  box-shadow: var(--barra-inferior-sombra);
+}
+
+@media (max-width: 767.98px) {
+  .bottom-nav {
+    display: flex;
+  }
+}
+
+.bottom-nav-item {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .1rem;
+  padding: .25rem .125rem;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: .68rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--barra-inferior-texto);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .2s, background-color .2s;
+}
+
+.bottom-nav-item i {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.bottom-nav-texto {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bottom-nav-item.active {
+  color: var(--barra-inferior-activo);
+  background: var(--barra-inferior-activo-fondo);
+}
+
+.bottom-nav-item:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: -3px;
+}

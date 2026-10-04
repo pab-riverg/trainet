@@ -1,0 +1,93 @@
+.sistema-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+  gap: .75rem;
+}
+
+.sistema-tarjeta {
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-left: 4px solid var(--app-titulo);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+}
+
+.sistema-valor {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.sistema-texto {
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.sistema-etiqueta {
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}
+
+.requisitos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+}
+
+.requisito {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.requisito-cuerpo,
+.requisito-pie {
+  padding: 1rem 1.25rem;
+}
+
+.requisito-titulo {
+  color: var(--app-titulo);
+}
+
+.requisito-indicadores {
+  margin: 0;
+}
+
+.requisito-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .3rem 0;
+  border-bottom: 1px solid var(--app-borde);
+  font-size: .9rem;
+}
+
+.requisito-fila dt {
+  font-weight: 400;
+}
+
+.requisito-fila dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.requisito-pie {
+  border-top: 1px solid var(--app-borde);
+  background: var(--app-superficie-2);
+}
+
+.requisito-fila dt,
+.requisito-fila dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* < 576px (convención de breakpoints en styles.css): el enlace del pie a todo el ancho (estilo en línea en la plantilla). */
+@media (max-width: 575.98px) {
+  .requisito-pie a {
+    display: block !important;
+    width: 100% !important;
+    text-align: center;
+  }
+}

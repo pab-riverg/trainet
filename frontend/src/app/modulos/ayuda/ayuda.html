@@ -1,1 +1,71 @@
-<p>ayuda works!</p>
+<div class="ayuda">
+  <h1 class="section-heading">Ayuda</h1>
+
+  <section class="card-widget mb-3" aria-labelledby="ayuda-accesos">
+    <h2 class="ayuda-titulo" id="ayuda-accesos">Accesos rápidos</h2>
+    <div class="ayuda-accesos">
+      <a routerLink="/triny" class="btn-primary-trainet" style="width:auto;">
+        <i class="bi bi-robot" aria-hidden="true"></i> Preguntarle a Triny
+      </a>
+      @if (tieneSoporte()) {
+        <a routerLink="/soporte" class="btn-corporate" style="width:auto;">
+          <i class="bi bi-headset" aria-hidden="true"></i> Ir a Soporte técnico
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="card-widget mb-3" aria-labelledby="ayuda-faq">
+    <h2 class="ayuda-titulo" id="ayuda-faq">Preguntas frecuentes</h2>
+
+    <label class="visually-hidden" for="ayuda-buscar">Buscar en las preguntas frecuentes</label>
+    <input type="search" id="ayuda-buscar" class="form-control mb-3" placeholder="Buscar en las preguntas…"
+           [formControl]="busqueda" />
+
+    @if (cargando()) {
+      <p class="text-center text-muted py-3">Cargando preguntas frecuentes…</p>
+    } @else if (error()) {
+      <p class="text-center text-danger py-3">{{ error() }}</p>
+    } @else if (preguntasVisibles().length === 0) {
+      <p class="text-center text-muted py-3" role="status">No encontramos resultados</p>
+    } @else {
+      <div class="ayuda-preguntas">
+        @for (pregunta of preguntasVisibles(); track pregunta.id) {
+          <details class="ayuda-pregunta">
+            <summary>{{ pregunta.pregunta }}</summary>
+            <p class="ayuda-respuesta">{{ pregunta.respuesta }}</p>
+          </details>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="card-widget mb-3" aria-labelledby="ayuda-modulos">
+    <h2 class="ayuda-titulo" id="ayuda-modulos">Tus módulos</h2>
+    @if (modulos().length === 0) {
+      <p class="text-muted small mb-0">Cargando tus módulos…</p>
+    } @else {
+      <ul class="ayuda-modulos">
+        @for (modulo of modulos(); track modulo.clave) {
+          <li>
+            <a [routerLink]="modulo.ruta" class="ayuda-modulo">
+              <i class="bi {{ modulo.icono }}" aria-hidden="true"></i>
+              <span class="ayuda-modulo-texto">
+                <strong>{{ modulo.titulo }}</strong>
+                @if (modulo.descripcion) {
+                  <span>{{ modulo.descripcion }}</span>
+                }
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="card-widget" aria-labelledby="ayuda-contacto">
+    <h2 class="ayuda-titulo" id="ayuda-contacto">Contacto</h2>
+    <p class="mb-0">¿No encontraste lo que buscabas? Escríbenos a
+      <a [href]="'mailto:' + correoContacto">{{ correoContacto }}</a>.</p>
+  </section>
+</div>

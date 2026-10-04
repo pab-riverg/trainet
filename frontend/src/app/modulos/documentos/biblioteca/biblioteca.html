@@ -1,0 +1,384 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Biblioteca de documentos</h6>
+
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalSubidaDocumento"
+              (click)="abrirSubida()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Subir documento
+      </button>
+    }
+  </div>
+
+  <!-- Filtros -->
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="doc-buscar">Buscar</label>
+      <input type="search" id="doc-buscar" class="form-control" formControlName="search" placeholder="Título…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="doc-filtro-tipo">Tipo</label>
+      <select id="doc-filtro-tipo" class="form-select" formControlName="tipo"
+           [class.is-invalid]="filtrosForm.controls.tipo.invalid && filtrosForm.controls.tipo.touched">
+        <option [ngValue]="null">Todos</option>
+        @for (tipo of tipos(); track tipo.id) {
+          <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="doc-filtro-categoria">Categoría</label>
+      <select id="doc-filtro-categoria" class="form-select" formControlName="categoria"
+           [class.is-invalid]="filtrosForm.controls.categoria.invalid && filtrosForm.controls.categoria.touched">
+        <option [ngValue]="null">Todas</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="doc-filtro-fecha">Fecha de creación</label>
+      <input type="date" id="doc-filtro-fecha" class="form-control" formControlName="fecha"
+           [class.is-invalid]="filtrosForm.controls.fecha.invalid && filtrosForm.controls.fecha.touched" />
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorCatalogos()) {
+    <p class="text-danger small px-3">{{ errorCatalogos() }}</p>
+  }
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando documentos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Título</th>
+          <th role="columnheader">Tipo</th>
+          <th role="columnheader">Categoría</th>
+          <th role="columnheader">Versión</th>
+          <th role="columnheader">Tamaño</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (documento of paginacion.visibles(); track documento.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">
+              <app-estado-badge class="me-2" variante="neutro" [valor]="extension(documento)" />{{ documento.titulo }}
+            </td>
+            <td data-label="Tipo" role="cell">{{ documento.tipo_nombre || '—' }}</td>
+            <td data-label="Categoría" role="cell">{{ documento.categoria_nombre || '—' }}</td>
+            <td data-label="Versión" role="cell">{{ documento.version }}</td>
+            <td data-label="Tamaño" role="cell">{{ formatearTamano(documento.tamanio) }}</td>
+            <td data-label="Fecha" role="cell">{{ documento.fecha_creacion }}</td>
+            <td class="celda-acciones" role="cell">
+              <app-boton-accion accion="ver"
+                  etiqueta="Ver documento en una pestaña nueva"
+                  titulo="Ver"
+                  [deshabilitado]="accionEnCurso() === documento.id"
+                  (click)="ver(documento)" />
+              <app-boton-accion accion="descargar"
+                  etiqueta="Descargar documento"
+                  titulo="Descargar"
+                  [deshabilitado]="accionEnCurso() === documento.id"
+                  (click)="descargar(documento)" />
+              @if (puedeGestionar()) {
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar documento"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalDocumento"
+                    (click)="abrirEditar(documento)" />
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar documento"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarDocumento"
+                    (click)="abrirEliminar(documento)" />
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="7" class="text-center text-muted py-4">No hay documentos que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Alta rápida de tipo/categoría (reutilizada en subida y edición) -->
+<ng-template #nuevoCatalogo>
+  <div class="mt-2 d-flex gap-2 align-items-end flex-wrap">
+    <div>
+      <label class="form-label campo-obligatorio" for="doc-nombre-nuevo">
+        {{ catalogoNuevo() === 'tipo' ? 'Nombre del tipo' : 'Nombre de la categoría' }}
+      </label>
+      <input type="text" id="doc-nombre-nuevo" class="form-control" [formControl]="nombreNuevoControl" [class.is-invalid]="nombreNuevoControl.invalid && nombreNuevoControl.touched" maxlength="255" />
+      @if (nombreNuevoControl.invalid && nombreNuevoControl.touched) {
+        <div class="mensaje-error">{{ mensajeControl(nombreNuevoControl) }}</div>
+      }
+    </div>
+    <button type="button"
+            class="btn-primary-trainet"
+            style="width:auto;"
+            [disabled]="guardandoNuevo()"
+            (click)="guardarNuevoCatalogo()">
+      {{ guardandoNuevo() ? 'Guardando…' : 'Guardar' }}
+    </button>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="cancelarNuevoCatalogo()">Cancelar</button>
+  </div>
+  @if (errorNuevo()) {
+    <div class="text-danger small">{{ errorNuevo() }}</div>
+  }
+</ng-template>
+
+<!-- Modal Editar documento -->
+<div class="modal fade" id="modalDocumento" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="edicionForm" (ngSubmit)="guardarEdicion()" #f_edicionForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+        <div class="modal-header">
+          <h5 class="modal-title">Editar documento</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+
+          @if (errorEdicion()) {
+            <p class="text-danger small">{{ errorEdicion() }}</p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-doc-titulo">Título</label>
+            <input type="text" id="edit-doc-titulo" class="form-control" formControlName="titulo" maxlength="255"
+           [class.is-invalid]="edicionForm.controls.titulo.invalid && edicionForm.controls.titulo.touched" />
+            @if (edicionForm.controls.titulo.invalid && edicionForm.controls.titulo.touched) {
+              <div class="text-danger small">El título es obligatorio (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-doc-version">Versión</label>
+            <input type="text" id="edit-doc-version" class="form-control" formControlName="version" maxlength="255"
+           [class.is-invalid]="edicionForm.controls.version.invalid && edicionForm.controls.version.touched" />
+            @if (edicionForm.controls.version.invalid && edicionForm.controls.version.touched) {
+              <div class="text-danger small">La versión es obligatoria (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-doc-tipo">Tipo</label>
+            <div class="d-flex gap-2">
+              <select id="edit-doc-tipo" class="form-select" formControlName="fo_tipo_documento"
+           [class.is-invalid]="edicionForm.controls.fo_tipo_documento.invalid && edicionForm.controls.fo_tipo_documento.touched">
+                <option [ngValue]="null" disabled>Selecciona un tipo</option>
+                @for (tipo of tipos(); track tipo.id) {
+                  <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+                }
+              </select>
+      @if (edicionForm.controls.fo_tipo_documento.invalid && edicionForm.controls.fo_tipo_documento.touched) {
+        <div class="mensaje-error">{{ mensajeControl(edicionForm.controls.fo_tipo_documento) }}</div>
+      }
+              <app-boton-accion accion="agregar"
+                  etiqueta="Agregar tipo de documento nuevo"
+                  titulo="Agregar tipo"
+                  (click)="abrirNuevoCatalogo('tipo', 'edicion')" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-doc-categoria">Categoría</label>
+            <div class="d-flex gap-2">
+              <select id="edit-doc-categoria" class="form-select" formControlName="fo_categoria_documento"
+           [class.is-invalid]="edicionForm.controls.fo_categoria_documento.invalid && edicionForm.controls.fo_categoria_documento.touched">
+                <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                @for (categoria of categorias(); track categoria.id) {
+                  <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+                }
+              </select>
+      @if (edicionForm.controls.fo_categoria_documento.invalid && edicionForm.controls.fo_categoria_documento.touched) {
+        <div class="mensaje-error">{{ mensajeControl(edicionForm.controls.fo_categoria_documento) }}</div>
+      }
+              <app-boton-accion accion="agregar"
+                  etiqueta="Agregar categoría nueva"
+                  titulo="Agregar categoría"
+                  (click)="abrirNuevoCatalogo('categoria', 'edicion')" />
+            </div>
+          </div>
+
+          @if (catalogoNuevo() && formularioDestino() === 'edicion') {
+            <ng-container *ngTemplateOutlet="nuevoCatalogo" />
+          }
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_edicionForm.submitted && edicionForm.invalid && edicionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarDocumento" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar documento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar el documento "{{ documentoAEliminar()?.titulo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Subir documento -->
+@if (puedeGestionar()) {
+  <div class="modal fade" id="modalSubidaDocumento" tabindex="-1" aria-labelledby="modalSubidaDocumentoTitulo" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form [formGroup]="subidaForm" (ngSubmit)="subir()" #f_subidaForm="ngForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalSubidaDocumentoTitulo">Subir documento</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" [disabled]="subiendo()"></button>
+          </div>
+
+          <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+          <div class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label campo-obligatorio" for="doc-titulo">Título</label>
+              <input type="text" id="doc-titulo" class="form-control" formControlName="titulo" maxlength="255"
+               [class.is-invalid]="subidaForm.controls.titulo.invalid && subidaForm.controls.titulo.touched" />
+          @if (subidaForm.controls.titulo.invalid && subidaForm.controls.titulo.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.titulo) }}</div>
+          }
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="doc-version">Versión</label>
+              <input type="text" id="doc-version" class="form-control" formControlName="version" maxlength="255"
+               [class.is-invalid]="subidaForm.controls.version.invalid && subidaForm.controls.version.touched" />
+          @if (subidaForm.controls.version.invalid && subidaForm.controls.version.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.version) }}</div>
+          }
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="doc-tipo">Tipo</label>
+              <div class="d-flex gap-2">
+                <select id="doc-tipo" class="form-select" formControlName="fo_tipo_documento"
+               [class.is-invalid]="subidaForm.controls.fo_tipo_documento.invalid && subidaForm.controls.fo_tipo_documento.touched">
+                  <option [ngValue]="null" disabled>Selecciona un tipo</option>
+                  @for (tipo of tipos(); track tipo.id) {
+                    <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+                  }
+                </select>
+          @if (subidaForm.controls.fo_tipo_documento.invalid && subidaForm.controls.fo_tipo_documento.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.fo_tipo_documento) }}</div>
+          }
+                <app-boton-accion accion="agregar"
+                    etiqueta="Agregar tipo de documento nuevo"
+                    titulo="Agregar tipo"
+                    (click)="abrirNuevoCatalogo('tipo', 'subida')" />
+              </div>
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="doc-categoria">Categoría</label>
+              <div class="d-flex gap-2">
+                <select id="doc-categoria" class="form-select" formControlName="fo_categoria_documento"
+               [class.is-invalid]="subidaForm.controls.fo_categoria_documento.invalid && subidaForm.controls.fo_categoria_documento.touched">
+                  <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                  @for (categoria of categorias(); track categoria.id) {
+                    <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+                  }
+                </select>
+          @if (subidaForm.controls.fo_categoria_documento.invalid && subidaForm.controls.fo_categoria_documento.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.fo_categoria_documento) }}</div>
+          }
+                <app-boton-accion accion="agregar"
+                    etiqueta="Agregar categoría nueva"
+                    titulo="Agregar categoría"
+                    (click)="abrirNuevoCatalogo('categoria', 'subida')" />
+              </div>
+            </div>
+          </div>
+
+          @if (catalogoNuevo() && formularioDestino() === 'subida') {
+            <ng-container *ngTemplateOutlet="nuevoCatalogo" />
+          }
+
+          <label class="form-label mt-3 campo-obligatorio" for="doc-archivo">Archivo (máx. 10 MB)</label>
+          <input type="file"
+                 id="doc-archivo"
+                 #archivoInput
+                 class="form-control mb-2"
+                
+                 accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg"
+                 (change)="onArchivoSeleccionado($event)" />
+
+          @if (errorArchivo()) {
+            <p class="text-danger small">{{ errorArchivo() }}</p>
+          }
+
+          @if (errorSubida()) {
+            <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+          }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-corporate" data-bs-dismiss="modal" [disabled]="subiendo()">Cancelar</button>
+            <button type="submit" class="btn-primary-trainet" [disabled]="subiendo()">
+              {{ subiendo() ? 'Subiendo…' : 'Subir' }}
+            </button>
+            @if (f_subidaForm.submitted && subidaForm.invalid && subidaForm.touched) {
+              <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

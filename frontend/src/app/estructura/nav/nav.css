@@ -1,0 +1,16 @@
+.sidebar-nav button.sidebar-link {
+  background: none;
+  border: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+}
+
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-submenu .sidebar-link {
+  padding-left: 2.5rem;
+}

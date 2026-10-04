@@ -5,11 +5,27 @@
   <meta charset="utf-8">
   <title>Frontend</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Modo oscuro sin parpadeo: se aplica antes de que arranque Angular, solo en pantallas de la app con sesión.
+       APP debe mantenerse sincronizada con las rutas hijas del shell autenticado de src/app/app.routes.ts
+       (todo lo demás es público o redirige: '', 'home', 'login', 'recuperar' y rutas desconocidas, que acaban en la
+       landing y no deben quedar oscuras). Además exige la sesión (trainet_token), como el authGuard. -->
+  <script>
+    (function () {
+      try {
+        var APP = ['dashboard', 'inicio', 'triny', 'administrador', 'inventario', 'usuarios', 'compras', 'reportes',
+          'ajustes', 'ayuda', 'perfil', 'capacitacion', 'documentos', 'soporte', 'recursos', 'proveedores'];
+        var segmento = location.pathname.replace(/^\/+/, '').split('/')[0];
+        if (APP.indexOf(segmento) === -1) { return; }
+        if (localStorage.getItem('trainet_modo_oscuro') !== 'true' || !localStorage.getItem('trainet_token')) { return; }
+        var raiz = document.documentElement;
+        raiz.setAttribute('data-theme', 'dark');
+        raiz.setAttribute('data-bs-theme', 'dark');
+      } catch (e) { /* sin almacenamiento: tema claro */ }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-  <!-- Bootstrap 5 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"/>
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"/>
   <!-- Source Sans 3 -->
@@ -26,11 +42,5 @@
 <body>
   <app-root></app-root>
 </body>
-
-<!-- Bootstrap JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-
-<!-- Scripts propios -->
-<script src="js/trainet.js"></script>
 
 </html>

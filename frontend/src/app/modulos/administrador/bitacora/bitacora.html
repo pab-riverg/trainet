@@ -1,0 +1,104 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Bitácora de auditoría</h6>
+    <button type="button" class="btn-corporate" style="width:auto;" [disabled]="cargando()" (click)="consultar()">
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Actualizar
+    </button>
+  </div>
+
+  <p class="small text-muted px-3 pt-3 mb-0">
+    <i class="bi bi-lock" aria-hidden="true"></i>
+    La bitácora es de solo lectura: ningún registro se puede editar ni eliminar.
+  </p>
+
+  <form class="d-flex flex-wrap gap-3 p-3 border-bottom filtros-listado" [formGroup]="filtrosForm">
+    <div>
+      <label class="form-label" for="bit-buscar">Buscar</label>
+      <input type="search" id="bit-buscar" class="form-control" formControlName="search" placeholder="Descripción o usuario…" />
+    </div>
+    <div>
+      <label class="form-label" for="bit-accion">Acción</label>
+      <select id="bit-accion" class="form-select" formControlName="accion">
+        <option value="">Todas</option>
+        @for (accion of catalogo().acciones; track accion.clave) {
+          <option [value]="accion.clave">{{ accion.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="bit-modulo">Módulo</label>
+      <select id="bit-modulo" class="form-select" formControlName="modulo">
+        <option value="">Todos</option>
+        @for (modulo of catalogo().modulos; track modulo.clave) {
+          <option [value]="modulo.clave">{{ modulo.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="bit-desde">Desde</label>
+      <input type="date" id="bit-desde" class="form-control" formControlName="desde" [class.is-invalid]="errorFechas()" />
+    </div>
+    <div>
+      <label class="form-label" for="bit-hasta">Hasta</label>
+      <input type="date" id="bit-hasta" class="form-control" formControlName="hasta" [class.is-invalid]="errorFechas()" />
+    </div>
+    <div class="align-self-end">
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar filtros</button>
+    </div>
+  </form>
+
+  @if (errorFechas()) {
+    <div class="mensaje-error px-3 pt-2" role="alert">{{ errorFechas() }}</div>
+  }
+  @if (errorCatalogo()) {
+    <p class="text-danger small px-3 pt-2 mb-0">{{ errorCatalogo() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando bitácora…</p>
+  }
+
+  @if (error()) {
+    <div class="text-center py-3" role="alert">
+      <p class="text-danger">{{ error() }}</p>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="consultar()">Reintentar</button>
+    </div>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Fecha y hora</th>
+            <th role="columnheader">Usuario</th>
+            <th role="columnheader">Acción</th>
+            <th role="columnheader">Módulo</th>
+            <th role="columnheader">Descripción</th>
+            <th role="columnheader">IP</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (evento of eventos(); track evento.id) {
+            <tr role="row">
+              <td class="celda-principal text-nowrap" role="cell">{{ formatearFechaHora(evento.fecha_hora) }}</td>
+              <td data-label="Usuario" role="cell">{{ evento.usuario_nombre || 'Sin usuario (intento fallido)' }}</td>
+              <td data-label="Acción" role="cell"><app-estado-badge dominio="bitacora" [valor]="evento.accion" [etiqueta]="evento.accion_etiqueta" /></td>
+              <td data-label="Módulo" role="cell">{{ evento.modulo_etiqueta }}</td>
+              <td data-label="Descripción" role="cell">{{ evento.descripcion }}</td>
+              <td data-label="IP" role="cell">{{ evento.ip || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="6" class="text-center text-muted py-4">No hay eventos que coincidan con los filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-paginador [total]="total()" [pagina]="pagina()" (cambioPagina)="irAPagina($event)" />
+  }
+
+</div>

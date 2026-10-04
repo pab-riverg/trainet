@@ -1,0 +1,578 @@
+/* Landing pública. Todo el color, borde, sombra y radio sale de los tokens --home-* (public/css/styles.css).
+   Los bloques se acomodan solos con flex-wrap y grid auto-fit; al final hay ajustes < 768px (convención de breakpoints en styles.css). */
+
+.home {
+  background: var(--home-fondo);
+  color: var(--home-texto);
+  line-height: 1.55;
+}
+
+.home-contenedor {
+  width: 100%;
+  max-width: var(--home-ancho);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+.home :focus-visible {
+  outline: 3px solid var(--home-foco);
+  outline-offset: 3px;
+}
+
+/* Las secciones reciben foco programático al llegar por ancla: no se les dibuja contorno. */
+.home-seccion:focus,
+.home-seccion:focus-visible {
+  outline: none;
+}
+
+/* ── Barra superior ── */
+.home-barra {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--home-fondo);
+  border-bottom: 1px solid var(--home-borde);
+}
+
+.home-barra-fila {
+  min-height: var(--home-barra-alto);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1.5rem;
+}
+
+.home-marca {
+  display: inline-flex;
+  align-items: center;
+}
+
+.home-logo {
+  height: 40px;
+  width: auto;
+}
+
+.home-logo-pie {
+  height: 32px;
+}
+
+.home-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem 1.5rem;
+}
+
+.home-nav a {
+  color: var(--home-texto-suave);
+  font-weight: 600;
+  text-decoration: none;
+  padding: .35rem 0;
+  transition: color .2s;
+}
+
+.home-nav a:hover {
+  color: var(--home-acento);
+}
+
+/* ── Botones ── */
+.home-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .6rem 1.25rem;
+  border: 1.5px solid transparent;
+  border-radius: var(--home-radio-boton);
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .2s, border-color .2s, color .2s, transform .2s;
+}
+
+.home-boton:hover {
+  transform: translateY(-1px);
+}
+
+.home-boton-grande {
+  padding: .85rem 1.75rem;
+  font-size: 1.05rem;
+}
+
+.home-boton-primario {
+  background: var(--home-acento);
+  color: var(--home-acento-texto);
+}
+
+.home-boton-primario:hover {
+  background: var(--home-acento-hover);
+  color: var(--home-acento-texto);
+}
+
+.home-boton-secundario {
+  background: var(--home-fondo);
+  border-color: var(--home-borde);
+  color: var(--home-texto);
+}
+
+.home-boton-secundario:hover {
+  border-color: var(--home-texto);
+  color: var(--home-texto);
+}
+
+/* ── Hero ── */
+.home-hero {
+  background: var(--home-hero-fondo);
+  padding-top: 4.5rem;
+  padding-bottom: 4rem;
+}
+
+.home-hero-texto {
+  max-width: 62rem;
+  text-align: center;
+}
+
+.home-etiqueta {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: .3rem .85rem;
+  border-radius: 999px;
+  background: var(--home-acento-suave);
+  color: var(--home-acento-hover);
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+.home-etiqueta-clara {
+  background: var(--home-triny-icono-fondo);
+  color: var(--home-triny-etiqueta);
+}
+
+.home-hero h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+}
+
+.home-hero-subtitulo {
+  max-width: 46rem;
+  margin: 0 auto 2rem;
+  font-size: 1.2rem;
+  color: var(--home-texto-suave);
+}
+
+.home-botones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+}
+
+.home-nota {
+  margin: 1.25rem 0 0;
+  font-size: .95rem;
+  color: var(--home-texto-suave);
+}
+
+.home-nota a {
+  color: var(--home-acento);
+  font-weight: 600;
+}
+
+/* ── Vista del producto ── */
+.home-producto {
+  margin-top: 3.5rem;
+}
+
+.home-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+}
+
+.home-pestana {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .5rem 1.1rem;
+  border: 1.5px solid var(--home-borde);
+  border-radius: 999px;
+  background: var(--home-fondo);
+  color: var(--home-texto-suave);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s;
+}
+
+.home-pestana:hover {
+  background: var(--home-acento-suave);
+  color: var(--home-acento-hover);
+}
+
+.home-pestana[aria-selected='true'] {
+  background: var(--home-acento);
+  border-color: var(--home-acento);
+  color: var(--home-acento-texto);
+}
+
+.home-panel-producto {
+  max-width: 1040px;
+  margin-inline: auto;
+  border-radius: var(--home-radio-grande);
+}
+
+.home-producto-nota {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: .9rem;
+  color: var(--home-texto-suave);
+}
+
+/* ── Secciones ── */
+.home-seccion {
+  padding-block: 5rem;
+  scroll-margin-top: calc(var(--home-barra-alto) + 1rem);
+}
+
+.home-seccion-suave {
+  background: var(--home-fondo-suave);
+}
+
+.home-encabezado {
+  max-width: 48rem;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.home-encabezado h2,
+.home-final h2,
+.home-triny h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.01em;
+}
+
+.home-encabezado p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--home-texto-suave);
+}
+
+.home-subtitulo {
+  margin: 0 0 1.25rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--home-texto-suave);
+}
+
+/* ── Tarjetas ── */
+.home-tarjetas,
+.home-roles {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home-tarjetas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+}
+
+.home-roles {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.home-tarjeta,
+.home-rol {
+  background: var(--home-fondo-tarjeta);
+  border: 1px solid var(--home-borde);
+  border-radius: var(--home-radio);
+  box-shadow: var(--home-sombra);
+}
+
+.home-tarjeta {
+  padding: 1.75rem;
+}
+
+.home-tarjeta h3,
+.home-tarjeta h4 {
+  margin: 1rem 0 .5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.home-tarjeta p,
+.home-rol p {
+  margin: 0;
+  color: var(--home-texto-suave);
+}
+
+.home-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: var(--home-radio);
+  background: var(--home-acento-suave);
+  color: var(--home-acento);
+  font-size: 1.4rem;
+}
+
+.home-icono-claro {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--home-triny-icono-fondo);
+  color: var(--home-triny-texto);
+  font-size: 1.2rem;
+}
+
+.home-rol {
+  padding: 1.1rem 1.25rem;
+}
+
+.home-rol h3 {
+  margin: 0 0 .25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.home-rol p {
+  font-size: .95rem;
+}
+
+.home-alcance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  margin: 2rem 0 0;
+  font-size: .95rem;
+  color: var(--home-texto-suave);
+}
+
+/* ── Triny ── */
+.home-triny {
+  background: var(--home-triny-fondo);
+  color: var(--home-triny-texto);
+}
+
+.home-triny :focus-visible {
+  outline-color: var(--home-triny-etiqueta);
+}
+
+.home-triny-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3rem;
+}
+
+.home-triny-texto {
+  flex: 1 1 24rem;
+}
+
+.home-triny-figura {
+  flex: 1 1 26rem;
+  min-width: 0;
+}
+
+.home-triny-parrafo {
+  margin: 0 0 1.5rem;
+  font-size: 1.1rem;
+  color: var(--home-triny-texto-suave);
+}
+
+.home-triny-puntos {
+  display: grid;
+  gap: .9rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.home-triny-puntos li {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  font-weight: 600;
+}
+
+.home-triny-nota {
+  margin: 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--home-triny-borde);
+  font-size: .9rem;
+  color: var(--home-triny-texto-suave);
+}
+
+/* ── Llamado final ── */
+.home-final {
+  background: var(--home-fondo-suave);
+  text-align: center;
+}
+
+.home-final-contenido {
+  max-width: 44rem;
+}
+
+.home-final p {
+  margin: 0 0 1.75rem;
+  font-size: 1.15rem;
+  color: var(--home-texto-suave);
+}
+
+.home-final .home-nota {
+  margin: 1.5rem 0 0;
+  font-size: .95rem;
+}
+
+/* ── Pie ── */
+.home-pie {
+  background: var(--home-fondo);
+  border-top: 1px solid var(--home-borde);
+  padding-block: 2rem;
+}
+
+.home-pie-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.home-copyright {
+  margin: 0;
+  flex-basis: 100%;
+  font-size: .9rem;
+  color: var(--home-texto-suave);
+}
+
+/* ── Responsive: solo < 768px (≥ 768px queda como está). ── */
+@media (max-width: 767.98px) {
+  .home {
+    overflow-x: clip;
+  }
+
+  .home img {
+    max-width: 100%;
+  }
+
+  .home-contenedor {
+    padding-inline: 1rem;
+  }
+
+  /* Cabecera: logo y botón en la fila de arriba; los enlaces, en una segunda fila con scroll horizontal sin barra. */
+  .home-barra-fila {
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    min-height: 0;
+    padding-block: .5rem 0;
+  }
+
+  .home-barra .home-marca {
+    order: 1;
+  }
+
+  .home-barra-fila > .home-boton {
+    order: 2;
+    padding: .5rem 1rem;
+  }
+
+  .home-barra .home-nav {
+    order: 3;
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    gap: 0 1.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .home-barra .home-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-barra .home-nav a {
+    flex: 0 0 auto;
+    padding: .6rem 0;
+    white-space: nowrap;
+  }
+
+  .home-hero {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .home-hero h1 {
+    overflow-wrap: break-word;
+  }
+
+  .home-hero-subtitulo {
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  .home-producto {
+    margin-top: 2rem;
+  }
+
+  .home-seccion {
+    padding-block: 3rem;
+  }
+
+  .home-encabezado {
+    margin-bottom: 2rem;
+  }
+
+  .home-encabezado p,
+  .home-triny-parrafo,
+  .home-final p {
+    font-size: 1rem;
+  }
+
+  .home-tarjeta {
+    padding: 1.25rem;
+  }
+
+  .home-triny-fila {
+    gap: 2rem;
+  }
+
+  .home-triny-texto {
+    min-width: 0;
+  }
+}
+
+/* < 576px: los botones del hero y del llamado final se apilan a todo el ancho. */
+@media (max-width: 575.98px) {
+  .home-botones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-boton-grande {
+    padding-block: .75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home *,
+  .home *::before,
+  .home *::after {
+    transition: none !important;
+    transform: none !important;
+  }
+}

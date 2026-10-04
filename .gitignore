@@ -1,0 +1,20 @@
+# Backend
+backend/media/
+backend/venv/
+backend/.env
+__pycache__/
+*.pyc
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Respaldos y exportaciones (contienen datos y secretos)
+*.sql
+*.zip
+backups/
+
+# Sistema
+Thumbs.db
+.DS_Store

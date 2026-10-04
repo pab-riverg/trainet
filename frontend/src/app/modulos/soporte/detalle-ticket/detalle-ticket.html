@@ -1,0 +1,176 @@
+<div class="modal fade" id="modalDetalleTicket" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Ticket #{{ ticketActual()?.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (ticketActual(); as ticket) {
+
+          <dl class="row mb-3">
+            <dt class="col-sm-3">Descripción</dt>
+            <dd class="col-sm-9">{{ ticket.descripcion }}</dd>
+
+            <dt class="col-sm-3">Categoría</dt>
+            <dd class="col-sm-9">{{ ticket.categoria_nombre || '—' }}</dd>
+
+            <dt class="col-sm-3">Reportado por</dt>
+            <dd class="col-sm-9">{{ ticket.usuario_nombre || '—' }}</dd>
+
+            <dt class="col-sm-3">Fecha</dt>
+            <dd class="col-sm-9">{{ ticket.fecha_creacion }}</dd>
+
+            <dt class="col-sm-3">Prioridad</dt>
+            <dd class="col-sm-9">
+              <app-estado-badge dominio="prioridad" [valor]="ticket.prioridad" [etiqueta]="etiquetaPrioridad(ticket.prioridad)" />
+            </dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+              <app-estado-badge dominio="ticket" [valor]="ticket.estado" [etiqueta]="etiquetaEstado(ticket.estado)" />
+            </dd>
+
+            <dt class="col-sm-3">Técnico</dt>
+            <dd class="col-sm-9">{{ ticket.tecnico_nombre || 'Sin asignar' }}</dd>
+
+            @if (ticket.fecha_resolucion) {
+              <dt class="col-sm-3">Resolución</dt>
+              <dd class="col-sm-9">{{ ticket.fecha_resolucion }} ({{ ticket.tiempo_resolucion }} días)</dd>
+            }
+
+            <dt class="col-sm-3">Observaciones</dt>
+            <dd class="col-sm-9">{{ ticket.observaciones || 'Sin observaciones.' }}</dd>
+          </dl>
+
+          <!-- Gestión -->
+          @if (puedeGestionar()) {
+            <form class="border-top pt-3 mb-3" [formGroup]="gestionForm" (ngSubmit)="guardar()" #f_gestionForm="ngForm">
+              <h6>Gestionar ticket</h6>
+
+              <div class="mb-3">
+                <label class="form-label" for="detalle-estado">Estado</label>
+                <select id="detalle-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="gestionForm.controls.estado.invalid && gestionForm.controls.estado.touched">
+                  @if (!estadoConocido()) {
+                    <option [ngValue]="ticket.estado" disabled>{{ ticket.estado }}</option>
+                  }
+                  @for (estado of estadosTicket; track estado.codigo) {
+                    <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="detalle-observaciones">Observaciones</label>
+                <textarea id="detalle-observaciones" class="form-control" rows="3" formControlName="observaciones"
+           [class.is-invalid]="gestionForm.controls.observaciones.invalid && gestionForm.controls.observaciones.touched"></textarea>
+              </div>
+
+              @if (puedeReasignar()) {
+                <div class="mb-3">
+                  <label class="form-label" for="detalle-tecnico">Técnico asignado</label>
+                  <select id="detalle-tecnico" class="form-select" formControlName="fo_tecnico"
+           [class.is-invalid]="gestionForm.controls.fo_tecnico.invalid && gestionForm.controls.fo_tecnico.touched">
+                    <option [ngValue]="null">Sin asignar</option>
+                    @for (tecnico of tecnicos(); track tecnico.id) {
+                      <option [ngValue]="tecnico.id">{{ tecnico.fo_usuario_nombre }}</option>
+                    }
+                  </select>
+                  @if (errorTecnicos()) {
+                    <div class="text-danger small">{{ errorTecnicos() }}</div>
+                  }
+                </div>
+              }
+
+              <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="guardando()">
+                {{ guardando() ? 'Guardando…' : 'Guardar' }}
+              </button>
+          @if (f_gestionForm.submitted && gestionForm.invalid && gestionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+              @if (mensajeGuardado()) {
+                <p class="text-success small mt-2">{{ mensajeGuardado() }}</p>
+              }
+              @if (errorGuardar()) {
+                <p class="text-danger small mt-2">{{ errorGuardar() }}</p>
+              }
+            </form>
+          }
+
+          <!-- Evidencias -->
+          <div class="border-top pt-3">
+            <h6>Evidencias</h6>
+
+            @if (cargandoEvidencias()) {
+              <p class="text-muted small">Cargando evidencias…</p>
+            }
+
+            @if (errorEvidencias()) {
+              <p class="text-danger small">{{ errorEvidencias() }}</p>
+            }
+
+            @if (!cargandoEvidencias() && !errorEvidencias()) {
+              <ul class="list-unstyled">
+                @for (evidencia of evidencias(); track evidencia.id) {
+                  <li class="d-flex align-items-center gap-2 mb-1">
+                    <a [href]="evidencia.archivo" target="_blank" rel="noopener noreferrer">{{ nombreArchivo(evidencia) }}</a>
+                    <span class="text-muted small">{{ evidencia.fecha_subida }}</span>
+                    @if (puedeEliminarEvidencia()) {
+                      <app-boton-accion accion="eliminar"
+                          etiqueta="Eliminar evidencia"
+                          titulo="Eliminar"
+                          [deshabilitado]="eliminandoEvidencia() === evidencia.id"
+                          (click)="eliminarEvidencia(evidencia)" />
+                    }
+                  </li>
+                } @empty {
+                  <li class="text-muted small">Este ticket no tiene evidencias.</li>
+                }
+              </ul>
+            }
+
+            @if (errorEliminarEvidencia()) {
+              <p class="text-danger small">{{ errorEliminarEvidencia() }}</p>
+            }
+
+            <label class="form-label" for="detalle-archivo">Adjuntar evidencia (máx. 10 MB)</label>
+            <input type="file"
+                   id="detalle-archivo"
+                   #archivoInput
+                   class="form-control mb-2"
+                   accept=".png,.jpg,.jpeg,.pdf,.txt,.log,.doc,.docx"
+                   (change)="onArchivoSeleccionado($event)" />
+
+            @if (errorArchivo()) {
+              <p class="text-danger small">{{ errorArchivo() }}</p>
+            }
+
+            <button type="button"
+                    class="btn-corporate"
+                    style="width:auto;"
+                    [disabled]="!archivoSeleccionado() || subiendo()"
+                    (click)="subirEvidencia()">
+              {{ subiendo() ? 'Subiendo…' : 'Adjuntar' }}
+            </button>
+
+            @if (errorSubida()) {
+              <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+            }
+          </div>
+
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>

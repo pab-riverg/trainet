@@ -1,0 +1,106 @@
+<div class="tienda-cabecera">
+  <div class="tienda-buscador">
+    <label class="visually-hidden" for="tienda-buscar">Buscar artículos</label>
+    <i class="bi bi-search" aria-hidden="true"></i>
+    <input type="search"
+           id="tienda-buscar"
+           class="form-control"
+           placeholder="Buscar artículos…"
+           [formControl]="filtrosForm.controls.search" />
+  </div>
+
+  <button type="button" class="btn-primary-trainet tienda-boton-carrito" style="width:auto;" (click)="irACarrito.emit()">
+    <i class="bi bi-cart3" aria-hidden="true"></i> Ver carrito ({{ carrito.unidades() }})
+  </button>
+</div>
+
+<div class="tienda-chips" role="group" aria-label="Filtrar por categoría">
+  <button type="button"
+          class="filter-btn"
+          [class.active]="filtrosForm.controls.categoria.value === null"
+          [attr.aria-pressed]="filtrosForm.controls.categoria.value === null"
+          (click)="elegirCategoria(null)">
+    <i class="bi bi-grid" aria-hidden="true"></i> Todas
+  </button>
+  @for (categoria of categorias(); track categoria.id) {
+    <button type="button"
+            class="filter-btn"
+            [class.active]="filtrosForm.controls.categoria.value === categoria.id"
+            [attr.aria-pressed]="filtrosForm.controls.categoria.value === categoria.id"
+            (click)="elegirCategoria(categoria.id)">
+      <i class="bi {{ categoria.icono }}" aria-hidden="true"></i> {{ categoria.nombre }}
+    </button>
+  }
+</div>
+
+@if (errorCategorias()) {
+  <p class="text-danger small">{{ errorCategorias() }}</p>
+}
+
+@if (cargando()) {
+  <p class="text-center text-muted py-5">Cargando catálogo…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-4">{{ error() }}</p>
+}
+
+@if (!cargando() && !error()) {
+  @if (articulos().length === 0) {
+    <div class="tienda-vacio">
+      <i class="bi bi-bag-x" aria-hidden="true"></i>
+      <p class="mb-0">No encontramos artículos con esos filtros.</p>
+    </div>
+  } @else {
+    <div class="tienda-grid">
+      @for (articulo of articulos(); track articulo.id) {
+        <article class="tienda-card">
+
+          @if (articulo.imagen) {
+            <img class="tienda-imagen" [src]="articulo.imagen" [alt]="articulo.nombre" loading="lazy" />
+          } @else {
+            <div class="tienda-icono-bloque" aria-hidden="true">
+              <i class="bi {{ articulo.categoria_icono || 'bi-box-seam' }}"></i>
+            </div>
+          }
+
+          <div class="tienda-card-cuerpo">
+            <span class="tienda-chip">{{ articulo.categoria_nombre }}</span>
+            <h3 class="tienda-nombre">{{ articulo.nombre }}</h3>
+            <p class="tienda-descripcion">{{ articulo.descripcion || 'Sin descripción.' }}</p>
+
+            <div class="tienda-precio">{{ formatearPrecio(articulo.precio_referencia) }}</div>
+            <div class="tienda-precio-nota">Precio de referencia</div>
+
+            @if (carrito.cantidadDe(articulo.id) > 0) {
+              <div class="tienda-en-carrito">
+                <i class="bi bi-check2-circle" aria-hidden="true"></i> En tu carrito
+              </div>
+              <div class="cantidad-control" role="group" [attr.aria-label]="'Cantidad de ' + articulo.nombre">
+                <button type="button" (click)="restar(articulo)" [attr.aria-label]="'Quitar una unidad de ' + articulo.nombre">
+                  <i class="bi bi-dash" aria-hidden="true"></i>
+                </button>
+                <span aria-live="polite">{{ carrito.cantidadDe(articulo.id) }}</span>
+                <button type="button" (click)="agregar(articulo)" [attr.aria-label]="'Agregar una unidad de ' + articulo.nombre">
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </button>
+              </div>
+            } @else {
+              <button type="button"
+                      class="btn-primary-trainet"
+                      (click)="agregar(articulo)"
+                      [attr.aria-label]="'Agregar ' + articulo.nombre + ' al carrito'">
+                @if (recienAgregado() === articulo.id) {
+                  <i class="bi bi-check2" aria-hidden="true"></i> Agregado
+                } @else {
+                  <i class="bi bi-cart-plus" aria-hidden="true"></i> Agregar al carrito
+                }
+              </button>
+            }
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+}

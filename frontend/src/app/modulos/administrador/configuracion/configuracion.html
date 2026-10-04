@@ -1,0 +1,66 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Configuración del sistema</h6>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando configuración…</p>
+  }
+
+  @if (errorCarga()) {
+    <div class="text-center py-3" role="alert">
+      <p class="text-danger">{{ errorCarga() }}</p>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="cargar()">Reintentar</button>
+    </div>
+  }
+
+  @if (!cargando() && !errorCarga()) {
+    <form class="p-3" [formGroup]="configuracionForm" (ngSubmit)="guardar()" #f_configuracionForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+
+      <div class="mb-2" style="max-width: 460px;">
+        <label class="form-label campo-obligatorio" for="config-nombre">Nombre del equipo de trabajo</label>
+        <input type="text" id="config-nombre" class="form-control" formControlName="nombre_equipo"
+               [class.is-invalid]="(configuracionForm.controls.nombre_equipo.invalid && configuracionForm.controls.nombre_equipo.touched) || errorApi()"
+               aria-describedby="ayuda-nombre-equipo" />
+        <div class="d-flex justify-content-between">
+          <div>
+            @if (configuracionForm.controls.nombre_equipo.invalid && configuracionForm.controls.nombre_equipo.touched) {
+              <div class="mensaje-error">{{ mensajeControl(configuracionForm.controls.nombre_equipo) }}</div>
+            } @else if (errorApi()) {
+              <div class="mensaje-error">{{ errorApi() }}</div>
+            }
+          </div>
+          <small class="text-muted" aria-live="polite">{{ longitud() }}/{{ maximo }}</small>
+        </div>
+        <div id="ayuda-nombre-equipo" class="form-text">
+          Este nombre lo ven todos los usuarios de la plataforma en la barra superior.
+        </div>
+      </div>
+
+      <p class="small mb-3">
+        Así se verá en la barra superior:
+        <strong class="vista-previa">{{ vistaPrevia() || '(vacío)' }}</strong>
+      </p>
+
+      <button type="submit" class="btn-primary-trainet boton-completo-movil" style="width:auto;" [disabled]="guardando()">
+        {{ guardando() ? 'Guardando…' : 'Guardar' }}
+      </button>
+      @if (f_configuracionForm.submitted && configuracionForm.invalid && configuracionForm.touched) {
+        <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+      }
+
+      @if (exito()) {
+        <p class="text-success small mt-2" role="status">{{ exito() }}</p>
+      }
+      @if (aviso()) {
+        <p class="text-muted small mt-2" role="status">{{ aviso() }}</p>
+      }
+      @if (errorGeneral()) {
+        <p class="text-danger small mt-2" role="alert">{{ errorGeneral() }}</p>
+      }
+    </form>
+  }
+
+</div>

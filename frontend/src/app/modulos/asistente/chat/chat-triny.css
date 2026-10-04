@@ -1,0 +1,269 @@
+/* Chat de Triny. Colores y sombras salen de los tokens --triny-* de styles.css (:root). */
+:host {
+  display: block;
+  height: 100%;
+}
+
+.triny-chat {
+  position: relative;
+  container-type: inline-size; /* el titular se adapta al ancho del panel */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--triny-panel-fondo);
+  border: 1px solid var(--triny-panel-borde);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+/* Única zona con scroll: los mensajes. */
+.triny-mensajes {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Columna centrada de ancho máximo; la barra de scroll queda en el borde del panel. */
+  padding: 1rem max(1rem, calc((100% - var(--triny-columna-max)) / 2));
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+/* Estado inicial (conversación vacía). */
+.triny-inicio {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: .25rem;
+  padding: 1rem;
+}
+
+.triny-inicio-icono {
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--triny-icono);
+}
+
+.triny-inicio-pequeno {
+  margin: .5rem 0 0;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--triny-texto-secundario);
+}
+
+.triny-inicio-titulo {
+  margin: 0;
+  font-size: var(--triny-titular-tam);
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.triny-inicio-ayuda {
+  margin: .25rem 0 0;
+  font-size: .88rem;
+  color: var(--triny-texto-secundario);
+}
+
+/* Burbujas. */
+.triny-fila {
+  display: flex;
+}
+
+.triny-fila-usuario {
+  justify-content: flex-end;
+}
+
+.triny-burbuja {
+  min-width: 0;
+  max-width: 85%;
+  padding: .55rem .8rem;
+  border-radius: 14px;
+  background: var(--triny-burbuja-bot-fondo);
+  color: var(--triny-burbuja-bot-texto);
+  border: 1px solid var(--triny-panel-borde);
+  overflow-wrap: anywhere;
+}
+
+.triny-burbuja-usuario {
+  background: var(--triny-burbuja-usuario-fondo);
+  color: var(--triny-burbuja-usuario-texto);
+  border-color: transparent;
+}
+
+.triny-burbuja-error {
+  border-color: var(--triny-error);
+}
+
+.triny-error {
+  color: var(--triny-error);
+}
+
+/* El texto de las respuestas conserva los saltos de línea (nunca se usa innerHTML). */
+.triny-texto {
+  white-space: pre-line;
+}
+
+/* Preguntas del tema elegido con el "+" (y errores del menú). */
+.triny-tema {
+  flex: 0 0 auto;
+  max-height: 35%;
+  overflow-y: auto;
+  width: min(var(--triny-columna-max), calc(100% - 2rem));
+  margin: 0 auto .5rem;
+  padding: .6rem .75rem;
+  background: var(--triny-burbuja-bot-fondo);
+  border: 1px solid var(--triny-panel-borde);
+  border-radius: 12px;
+}
+
+.triny-opciones,
+.triny-valoracion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  align-items: center;
+}
+
+.triny-boton {
+  width: auto;
+  padding: .3rem .7rem;
+  font-size: .85rem;
+  text-align: left;
+}
+
+/* Barra de entrada flotante. */
+.triny-entrada {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  width: min(var(--triny-columna-max), calc(100% - 2rem));
+  margin: 0 auto 1rem;
+  padding: .6rem .75rem .5rem;
+  background: var(--triny-entrada-fondo);
+  border: 1px solid var(--triny-entrada-borde);
+  border-radius: 18px;
+  box-shadow: var(--triny-entrada-sombra);
+}
+
+.triny-campo {
+  width: 100%;
+  min-height: 1.6rem;
+  max-height: 7.5rem; /* unas cinco líneas */
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: var(--triny-burbuja-bot-texto);
+}
+
+.triny-campo::placeholder {
+  color: var(--triny-texto-secundario);
+}
+
+.triny-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.triny-mas,
+.triny-enviar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.triny-mas {
+  background: transparent;
+  color: var(--accion-color);
+  font-size: 1.15rem;
+}
+
+.triny-mas:hover {
+  background: var(--accion-hover-bg);
+  color: var(--accion-hover-color);
+}
+
+.triny-enviar {
+  background: var(--triny-enviar-fondo);
+  color: var(--triny-enviar-texto);
+}
+
+.triny-enviar:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.triny-boton:focus-visible,
+.triny-enviar:focus-visible,
+.triny-mas:focus-visible,
+.triny-popover-item:focus-visible {
+  outline: 3px solid var(--accion-foco);
+  outline-offset: 2px;
+}
+
+/* Menú "+" (se abre hacia arriba; fixed para que no lo recorte el panel). */
+.triny-popover {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  max-width: calc(100vw - 2rem);
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: .25rem;
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-radius: 10px;
+  box-shadow: var(--menu-sombra);
+  z-index: 1060;
+}
+
+.triny-popover-item {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem .75rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--app-titulo);
+  cursor: pointer;
+}
+
+.triny-popover-item:hover,
+.triny-popover-item:focus-visible {
+  background: var(--accion-hover-bg);
+  color: var(--accion-hover-color);
+}
+
+.triny-popover-aviso {
+  margin: 0;
+  padding: .5rem .75rem;
+  font-size: .85rem;
+  color: var(--triny-texto-secundario);
+}
+
+/* < 992px: botones con objetivo táctil de 40px. */
+@media (max-width: 991.98px) {
+  .triny-mas,
+  .triny-enviar {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}

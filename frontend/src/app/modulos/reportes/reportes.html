@@ -1,1 +1,42 @@
-<p>reportes works!</p>
+<h1 class="section-heading">Reportes y análisis</h1>
+
+@if (!tienePermiso) {
+  <p class="text-center text-danger py-3">No tienes permiso para acceder a Reportes y Análisis.</p>
+} @else {
+
+  @if (informeAbierto(); as id) {
+    <app-detalle-informe [informeId]="id" (cerrar)="cerrarInforme()" />
+  } @else {
+
+    <div class="reportes-tabs" role="tablist" aria-label="Secciones de reportes">
+      @for (pestana of pestanas(); track pestana.id) {
+        <button type="button"
+                role="tab"
+                class="filter-btn"
+                [class.active]="pestanaActiva() === pestana.id"
+                [attr.aria-selected]="pestanaActiva() === pestana.id"
+                [id]="'tab-rep-' + pestana.id"
+                [attr.aria-controls]="'panel-rep-' + pestana.id"
+                (click)="cambiarPestana(pestana.id)">
+          <i class="bi {{ pestana.icono }}" aria-hidden="true"></i>
+          {{ pestana.etiqueta }}
+        </button>
+      }
+    </div>
+
+    <div role="tabpanel" [id]="'panel-rep-' + pestanaActiva()" [attr.aria-labelledby]="'tab-rep-' + pestanaActiva()">
+      @switch (pestanaActiva()) {
+        @case ('archivos') {
+          <app-archivos-importados [puedeImportar]="puedeImportar" (informeGenerado)="abrirInformeNuevo($event)" />
+        }
+        @case ('generar') {
+          <app-generar-informe (generado)="abrirInformeNuevo($event)" />
+        }
+        @case ('historial') {
+          <app-historial-informes [puedeEliminar]="puedeGestionar" (ver)="abrirInforme($event)" />
+        }
+      }
+    </div>
+
+  }
+}

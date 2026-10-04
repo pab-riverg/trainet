@@ -1,0 +1,102 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Historial de informes</h6>
+  </div>
+
+  <form class="d-flex flex-wrap gap-3 p-3 border-bottom filtros-listado" [formGroup]="filtrosForm">
+    <div>
+      <label class="form-label" for="hist-inf-buscar">Buscar</label>
+      <input type="search" id="hist-inf-buscar" class="form-control" formControlName="search" placeholder="Título…" />
+    </div>
+    <div>
+      <label class="form-label" for="hist-inf-tipo">Tipo</label>
+      <select id="hist-inf-tipo" class="form-select" formControlName="tipo">
+        <option [ngValue]="null">Todos</option>
+        @for (tipo of tipos(); track tipo.id) {
+          <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="hist-inf-desde">Generado desde</label>
+      <input type="date" id="hist-inf-desde" class="form-control" formControlName="desde" />
+    </div>
+    <div>
+      <label class="form-label" for="hist-inf-hasta">Hasta</label>
+      <input type="date" id="hist-inf-hasta" class="form-control" formControlName="hasta" />
+    </div>
+    <div class="align-self-end">
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar filtros</button>
+    </div>
+  </form>
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3 pt-3 mb-0" role="alert">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando historial…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Informe</th>
+            <th role="columnheader">Tipo</th>
+            <th role="columnheader">Fecha</th>
+            <th role="columnheader">Generado por</th>
+            <th role="columnheader">Archivos</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (informe of paginacion.visibles(); track informe.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ informe.titulo }}</td>
+              <td data-label="Tipo" role="cell"><app-estado-badge variante="info" [valor]="informe.tipo_nombre" /></td>
+              <td data-label="Fecha" role="cell">{{ formatearFecha(informe.fecha_generacion) }}</td>
+              <td data-label="Generado por" role="cell">{{ informe.usuario_nombre || 'Usuario eliminado' }}</td>
+              <td data-label="Archivos" role="cell">{{ informe.total_archivos > 0 ? informe.total_archivos : '—' }}</td>
+              <td class="celda-acciones text-nowrap" role="cell">
+                <app-boton-accion accion="ver" etiqueta="Ver informe" titulo="Ver" (click)="ver.emit(informe.id)" />
+
+                <app-menu-descarga class="ms-1" [etiquetaAccesible]="'Descargar informe ' + informe.titulo"
+                                   [opciones]="opcionesPorInforme().get(informe.id) ?? []"
+                                   [cargando]="descargaDe(informe.id)"
+                                   [deshabilitado]="descargando() !== null" />
+
+                @if (puedeEliminar()) {
+                  @if (informePorEliminar() === informe.id) {
+                    <span class="small ms-2">¿Eliminar?</span>
+                    <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                            [disabled]="eliminandoId() === informe.id" (click)="confirmarEliminar(informe)">Sí</button>
+                    <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarEliminar()">No</button>
+                  } @else {
+                    <app-boton-accion accion="eliminar"
+                        etiqueta="Eliminar informe"
+                        titulo="Eliminar"
+                        (click)="pedirEliminar(informe)" />
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="6" class="text-center text-muted py-4">Aún no hay informes generados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

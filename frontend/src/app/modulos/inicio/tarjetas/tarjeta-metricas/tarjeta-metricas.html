@@ -1,0 +1,23 @@
+<section class="tarjeta" [attr.aria-label]="tarjeta().titulo">
+  <h2 class="tarjeta-titulo">{{ tarjeta().titulo }}</h2>
+
+  <div class="metricas">
+    @for (metrica of tarjeta().metricas; track metrica.etiqueta) {
+      @if (metrica.ruta) {
+        <a class="metrica metrica-enlace" [routerLink]="metrica.ruta">
+          <span class="metrica-valor">{{ formatearNumero(metrica.valor) }}</span>
+          <span class="metrica-etiqueta">{{ metrica.etiqueta }}</span>
+        </a>
+      } @else {
+        <div class="metrica">
+          <span class="metrica-valor">{{ formatearNumero(metrica.valor) }}</span>
+          <span class="metrica-etiqueta">{{ metrica.etiqueta }}</span>
+        </div>
+      }
+    }
+  </div>
+
+  @if (tarjeta().ruta_ver_todo; as ruta) {
+    <div class="tarjeta-pie"><a [routerLink]="ruta">Ver todo</a></div>
+  }
+</section>

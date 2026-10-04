@@ -1,0 +1,122 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Catálogo de recursos</h6>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando catálogo…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (errorCambio()) {
+    <p class="text-danger small px-3">{{ errorCambio() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Recurso</th>
+          <th role="columnheader">Disponible</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (tipo of paginacion.visibles(); track tipo.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ tipo.nombre_tipo }}</td>
+            <td data-label="Disponible" role="cell">
+              <div class="form-check form-switch">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       [id]="'disponible-' + tipo.id"
+                       [checked]="tipo.disponible"
+                       [disabled]="cambiandoId() === tipo.id"
+                       (change)="cambiarDisponible(tipo, $event)" />
+                <label class="form-check-label" [for]="'disponible-' + tipo.id">
+                  {{ tipo.disponible ? 'Disponible' : 'No disponible' }}
+                </label>
+              </div>
+            </td>
+            <td class="celda-acciones" role="cell">
+              <app-boton-accion accion="eliminar"
+                  etiqueta="Eliminar tipo de recurso"
+                  titulo="Eliminar"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEliminarTipoRecurso"
+                  (click)="abrirEliminar(tipo)" />
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="3" class="text-center text-muted py-4">No hay tipos de recurso registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+  <form class="p-3 border-top" [formGroup]="tipoForm" (ngSubmit)="crear()" #f_tipoForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+    <h6>Nuevo tipo de recurso</h6>
+
+    <div class="d-flex flex-wrap gap-3 align-items-end filtros-listado">
+      <div>
+        <label class="form-label campo-obligatorio" for="tipo-nombre">Nombre</label>
+        <input type="text" id="tipo-nombre" class="form-control" formControlName="nombre_tipo" maxlength="255"
+           [class.is-invalid]="tipoForm.controls.nombre_tipo.invalid && tipoForm.controls.nombre_tipo.touched" />
+      @if (tipoForm.controls.nombre_tipo.invalid && tipoForm.controls.nombre_tipo.touched) {
+        <div class="mensaje-error">{{ mensajeControl(tipoForm.controls.nombre_tipo) }}</div>
+      }
+      </div>
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" id="tipo-disponible" formControlName="disponible" />
+        <label class="form-check-label" for="tipo-disponible">Disponible</label>
+      </div>
+      <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="creando()">
+        {{ creando() ? 'Guardando…' : 'Crear' }}
+      </button>
+          @if (f_tipoForm.submitted && tipoForm.invalid && tipoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+    </div>
+
+    @if (errorCrear()) {
+      <p class="text-danger small mt-2">{{ errorCrear() }}</p>
+    }
+  </form>
+
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarTipoRecurso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar tipo de recurso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar "{{ tipoAEliminar()?.nombre_tipo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

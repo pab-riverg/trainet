@@ -1,0 +1,285 @@
+@if (puedeGestionar()) {
+  <div class="users-table-card">
+
+    <div class="users-table-header">
+      <h6>Registrar acuerdo con un proveedor</h6>
+    </div>
+
+    <form class="p-3" [formGroup]="acuerdoForm" (ngSubmit)="registrar()" #f_acuerdoForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+      <div class="d-flex flex-wrap gap-3 mb-3 filtros-listado">
+        <div>
+          <label class="form-label campo-obligatorio" for="acu-proveedor">Proveedor</label>
+          <select id="acu-proveedor" class="form-select" formControlName="fo_proveedor"
+           [class.is-invalid]="acuerdoForm.controls.fo_proveedor.invalid && acuerdoForm.controls.fo_proveedor.touched">
+            <option [ngValue]="null" disabled>Selecciona un proveedor</option>
+            @for (proveedor of proveedores(); track proveedor.id) {
+              <option [ngValue]="proveedor.id">
+                {{ proveedor.razon_social }}{{ proveedor.tiene_cotizacion_aprobada ? '' : ' (sin cotización aprobada)' }}
+              </option>
+            }
+          </select>
+      @if (acuerdoForm.controls.fo_proveedor.invalid && acuerdoForm.controls.fo_proveedor.touched) {
+        <div class="mensaje-error">{{ mensajeControl(acuerdoForm.controls.fo_proveedor) }}</div>
+      }
+          @if (errorProveedores()) {
+            <div class="text-danger small">{{ errorProveedores() }}</div>
+          }
+        </div>
+        <div>
+          <label class="form-label campo-obligatorio" for="acu-inicio">Fecha de inicio</label>
+          <input type="date" id="acu-inicio" class="form-control" formControlName="fecha_inicio"
+           [class.is-invalid]="acuerdoForm.controls.fecha_inicio.invalid && acuerdoForm.controls.fecha_inicio.touched" />
+      @if (acuerdoForm.controls.fecha_inicio.invalid && acuerdoForm.controls.fecha_inicio.touched) {
+        <div class="mensaje-error">{{ mensajeControl(acuerdoForm.controls.fecha_inicio) }}</div>
+      }
+        </div>
+        <div>
+          <label class="form-label campo-obligatorio" for="acu-fin">Fecha de fin</label>
+          <input type="date" id="acu-fin" class="form-control" formControlName="fecha_fin"
+           [class.is-invalid]="acuerdoForm.controls.fecha_fin.invalid && acuerdoForm.controls.fecha_fin.touched" />
+      @if (acuerdoForm.controls.fecha_fin.invalid && acuerdoForm.controls.fecha_fin.touched) {
+        <div class="mensaje-error">{{ mensajeControl(acuerdoForm.controls.fecha_fin) }}</div>
+      }
+        </div>
+      </div>
+
+      @if (proveedorElegido() && !proveedorElegido()?.tiene_cotizacion_aprobada) {
+        <p class="text-warning small">
+          Este proveedor no tiene una cotización aprobada. Aprueba una desde su perfil (Directorio) antes de registrar el acuerdo.
+        </p>
+      }
+
+      <div class="mb-3">
+        <label class="form-label campo-obligatorio" for="acu-descripcion">Descripción</label>
+        <input type="text" id="acu-descripcion" class="form-control" formControlName="descripcion" maxlength="255"
+           [class.is-invalid]="acuerdoForm.controls.descripcion.invalid && acuerdoForm.controls.descripcion.touched" />
+      @if (acuerdoForm.controls.descripcion.invalid && acuerdoForm.controls.descripcion.touched) {
+        <div class="mensaje-error">{{ mensajeControl(acuerdoForm.controls.descripcion) }}</div>
+      }
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="acu-confirmacion">Confirmación de la contratación (opcional)</label>
+        <input type="text" id="acu-confirmacion" class="form-control" formControlName="confirmacion" maxlength="255"
+               placeholder="Ej.: confirmado por correo el 12/11"
+           [class.is-invalid]="acuerdoForm.controls.confirmacion.invalid && acuerdoForm.controls.confirmacion.touched" />
+      </div>
+
+      <label class="form-label" for="acu-archivo">Archivo del acuerdo (opcional, máx. 10 MB)</label>
+      <input type="file"
+             id="acu-archivo"
+             #archivoInput
+             class="form-control mb-2"
+             style="max-width: 420px;"
+             accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+             (change)="onArchivoSeleccionado($event)" />
+
+      @if (errorArchivo()) {
+        <p class="text-danger small">{{ errorArchivo() }}</p>
+      }
+
+      <p class="text-muted small">El acuerdo quedará pendiente hasta que un directivo o administrador lo apruebe.</p>
+
+      <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="enviando()">
+        {{ enviando() ? 'Registrando…' : 'Registrar acuerdo' }}
+      </button>
+          @if (f_acuerdoForm.submitted && acuerdoForm.invalid && acuerdoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+      @if (exitoEnvio()) {
+        <p class="text-success small mt-2">{{ exitoEnvio() }}</p>
+      }
+      @if (errorEnvio()) {
+        <p class="text-danger small mt-2">{{ errorEnvio() }}</p>
+      }
+    </form>
+
+  </div>
+}
+
+<div class="users-table-card" [class.mt-3]="puedeGestionar()">
+
+  <div class="users-table-header">
+    <h6>Acuerdos</h6>
+  </div>
+
+  <div class="p-3">
+    <label class="form-label" for="acu-filtro-estado">Estado</label>
+    <select id="acu-filtro-estado" class="form-select" [formControl]="filtroEstado" style="max-width: 240px;">
+      <option [ngValue]="null">Todos</option>
+      @for (estado of estados; track estado.codigo) {
+        <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+      }
+    </select>
+  </div>
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando acuerdos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">#</th>
+          <th role="columnheader">Proveedor</th>
+          <th role="columnheader">Descripción</th>
+          <th role="columnheader">Inicio</th>
+          <th role="columnheader">Fin</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Confirmación</th>
+          <th role="columnheader">Decisión</th>
+          <th role="columnheader">Archivos</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (contrato of paginacion.visibles(); track contrato.id) {
+          <tr role="row">
+            <td data-label="#" role="cell">{{ contrato.id }}</td>
+            <td class="celda-principal" role="cell">{{ contrato.proveedor_nombre || '—' }}</td>
+            <td data-label="Descripción" role="cell">{{ contrato.descripcion }}</td>
+            <td data-label="Inicio" role="cell">{{ contrato.fecha_inicio }}</td>
+            <td data-label="Fin" role="cell">{{ contrato.fecha_fin }}</td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="acuerdo" [valor]="contrato.estado" [etiqueta]="etiquetaEstado(contrato.estado)" /></td>
+            <td data-label="Confirmación" role="cell">{{ contrato.confirmacion || '—' }}</td>
+            <td data-label="Decisión" role="cell">
+              @if (contrato.aprobador_nombre) {
+                <div class="small">
+                  {{ contrato.estado === 'rechazado' ? 'Rechazado' : 'Aprobado' }} por {{ contrato.aprobador_nombre }}
+                  @if (contrato.fecha_decision) {
+                    <span class="text-muted">({{ contrato.fecha_decision | date: 'dd/MM/yyyy HH:mm' }})</span>
+                  }
+                </div>
+                @if (contrato.motivo_decision) {
+                  <div class="small text-muted">Motivo: {{ contrato.motivo_decision }}</div>
+                }
+              } @else {
+                —
+              }
+            </td>
+            <td data-label="Archivos" role="cell">
+              @if (contrato.archivo) {
+                <app-boton-accion accion="acuerdo"
+                    etiqueta="Descargar archivo del acuerdo"
+                    titulo="Descargar acuerdo"
+                    [deshabilitado]="accionEnCurso() === contrato.id"
+                    (click)="descargar(contrato)" />
+              }
+              @if (contrato.fo_cotizacion) {
+                <app-boton-accion accion="cotizacion"
+                    etiqueta="Descargar cotización asociada"
+                    titulo="Descargar cotización"
+                    [deshabilitado]="accionEnCurso() === contrato.id"
+                    (click)="descargarCotizacion(contrato)" />
+              }
+              @if (!contrato.archivo && !contrato.fo_cotizacion) {
+                —
+              }
+            </td>
+            <td class="celda-acciones" role="cell">
+              @if (contrato.estado === 'pendiente_aprobacion') {
+                @if (puedeAprobar()) {
+                  <button type="button"
+                          class="btn-primary-trainet"
+                          style="width:auto;"
+                          [disabled]="accionEnCurso() === contrato.id"
+                          (click)="aprobar(contrato)">
+                    Aprobar
+                  </button>
+                  <button type="button"
+                          class="btn-corporate ms-1"
+                          style="width:auto;"
+                          data-bs-toggle="modal"
+                          data-bs-target="#modalRechazarAcuerdo"
+                          [disabled]="accionEnCurso() === contrato.id"
+                          (click)="abrirRechazo(contrato)">
+                    Rechazar
+                  </button>
+                } @else {
+                  <span class="small text-muted">Espera la aprobación de un directivo o administrador.</span>
+                }
+              } @else if (contrato.estado === 'vigente' && puedeGestionar()) {
+                <button type="button"
+                        class="btn-corporate"
+                        style="width:auto;"
+                        [disabled]="accionEnCurso() === contrato.id"
+                        (click)="cerrarAcuerdo(contrato, 'finalizado')">
+                  Finalizar
+                </button>
+                <button type="button"
+                        class="btn-corporate ms-1"
+                        style="width:auto;"
+                        [disabled]="accionEnCurso() === contrato.id"
+                        (click)="cerrarAcuerdo(contrato, 'cancelado')">
+                  Cancelar
+                </button>
+              } @else if (!(contrato.estado === 'rechazado' && puedeGestionar())) {
+                —
+              }
+              @if (puedeGestionar() && (contrato.estado === 'pendiente_aprobacion' || contrato.estado === 'rechazado')) {
+                @if (contratoPorEliminar() === contrato.id) {
+                  <span class="small ms-2">¿Eliminar?</span>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                          [disabled]="accionEnCurso() === contrato.id"
+                          (click)="confirmarEliminar(contrato)">Sí</button>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                          (click)="cancelarEliminar()">No</button>
+                } @else {
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar acuerdo"
+                      titulo="Eliminar"
+                      (click)="pedirEliminar(contrato)" />
+                }
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="10" class="text-center text-muted py-4">No hay acuerdos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Modal rechazo (motivo obligatorio) -->
+<div class="modal fade" id="modalRechazarAcuerdo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Rechazar acuerdo #{{ contratoARechazar()?.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="form-label" for="acu-motivo">Motivo del rechazo (obligatorio)</label>
+        <textarea id="acu-motivo" class="form-control" rows="3" maxlength="1000" [formControl]="motivoControl"></textarea>
+
+        @if (errorRechazo()) {
+          <p class="text-danger small mt-2">{{ errorRechazo() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarRechazo()" [disabled]="rechazando()">
+          {{ rechazando() ? 'Rechazando…' : 'Rechazar acuerdo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

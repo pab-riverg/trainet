@@ -1,0 +1,50 @@
+<figure class="grafico">
+  <figcaption class="grafico-titulo">{{ grafico().titulo }}</figcaption>
+
+  @if (series().length > 1) {
+    <ul class="grafico-leyenda">
+      @for (serie of series(); track serie.nombre) {
+        <li><span class="grafico-muestra" [style.background]="serie.color"></span>{{ serie.nombre }}</li>
+      }
+    </ul>
+  }
+
+  <div class="grafico-barras" aria-hidden="true">
+    @for (fila of filas(); track fila.etiqueta) {
+      <div class="grafico-fila">
+        <div class="grafico-etiqueta" [title]="fila.etiqueta">{{ fila.etiqueta }}</div>
+        <div class="grafico-pistas">
+          @for (barra of fila.barras; track barra.serie) {
+            <div class="grafico-pista">
+              <div class="grafico-barra" [style.width.%]="barra.porcentaje" [style.background]="barra.color"></div>
+              <span class="grafico-valor">{{ formatear(barra.valor) }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Alternativa en tabla para lectores de pantalla -->
+  <table class="visually-hidden">
+    <caption>{{ grafico().titulo }}</caption>
+    <thead>
+      <tr>
+        <th scope="col">Categoría</th>
+        @for (serie of series(); track serie.nombre) {
+          <th scope="col">{{ serie.nombre }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (fila of filas(); track fila.etiqueta) {
+        <tr>
+          <th scope="row">{{ fila.etiqueta }}</th>
+          @for (barra of fila.barras; track barra.serie) {
+            <td>{{ formatear(barra.valor) }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</figure>

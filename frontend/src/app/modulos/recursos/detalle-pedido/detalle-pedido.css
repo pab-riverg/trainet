@@ -1,0 +1,20 @@
+dt {
+  font-weight: 600;
+}
+
+/* Breakpoints de Bootstrap (convención en styles.css). 576–767px: las etiquetas largas ocupan su propia línea. */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .row > dt,
+  .row > dd {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* < 768px: correos, URLs y nombres largos no empujan el ancho. */
+@media (max-width: 767.98px) {
+  dd {
+    overflow-wrap: anywhere;
+  }
+}

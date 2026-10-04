@@ -1,0 +1,68 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Historial de accesos</h6>
+  </div>
+
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="hist-doc-accion">Acción</label>
+      <select id="hist-doc-accion" class="form-select" formControlName="accion">
+        <option [ngValue]="null">Todas</option>
+        <option ngValue="consulta">Consulta</option>
+        <option ngValue="descarga">Descarga</option>
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="hist-doc-documento">Documento</label>
+      <select id="hist-doc-documento" class="form-select" formControlName="documento" style="max-width: 320px;">
+        <option [ngValue]="null">Todos</option>
+        @for (documento of documentos(); track documento.id) {
+          <option [ngValue]="documento.id">{{ documento.titulo }}</option>
+        }
+      </select>
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorDocumentos()) {
+    <p class="text-danger small px-3">{{ errorDocumentos() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando historial…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Documento</th>
+          <th role="columnheader">Usuario</th>
+          <th role="columnheader">Acción</th>
+          <th role="columnheader">Fecha</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (registro of paginacion.visibles(); track registro.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ registro.documento_titulo || '—' }}</td>
+            <td data-label="Usuario" role="cell">{{ registro.usuario_nombre || '—' }}</td>
+            <td data-label="Acción" role="cell">{{ etiquetaAccion(registro.accion) }}</td>
+            <td data-label="Fecha" role="cell">{{ registro.fecha }}</td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="4" class="text-center text-muted py-4">No hay accesos registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

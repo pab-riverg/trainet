@@ -1,4 +1,4 @@
-<nav id="sidebar">
+<nav id="sidebar" aria-label="Menú principal" (click)="alPulsarMenu($event)">
 
   <div class="sidebar-brand">
   <a routerLink="inicio">
@@ -6,81 +6,71 @@
   </a>
   </div>
 
-  <div class="sidebar-nav" (click)="closeSidebar()">
+  <div class="sidebar-nav">
 
-    <div class="nav-section-label">Principal</div>
+    @if (principal().length > 0) {
+      <div class="nav-section-label">Principal</div>
+      @for (modulo of principal(); track modulo.clave) {
+        <a [routerLink]="modulo.ruta" routerLinkActive="active" class="sidebar-link">
+          <i class="bi {{ modulo.icono }}"></i> {{ modulo.titulo }}
+        </a>
+      }
+    }
 
-    <a routerLink="inicio"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-house-door"></i> Inicio
-    </a>
+    @if (gestion().length > 0 || mas().length > 0) {
+      <div class="nav-section-label">Gestión</div>
+    }
 
-    <a routerLink="dashboard"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-grid-1x2"></i> Dashboard
-    </a>
+    @for (modulo of gestion(); track modulo.clave) {
+      <a [routerLink]="modulo.ruta" routerLinkActive="active" class="sidebar-link">
+        <i class="bi {{ modulo.icono }}"></i> {{ modulo.titulo }}
+      </a>
+    }
 
-    <a routerLink="triny"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-robot"></i> Triny AI
-    </a>
+    @if (mas().length > 0) {
+      <button type="button"
+              class="sidebar-link"
+              aria-controls="submenu-mas"
+              [attr.aria-expanded]="mostrarMas()"
+              (click)="toggleMas(); $event.stopPropagation()">
+        @if (mostrarMas()) {
+          <i class="bi bi-dash-lg"></i>
+        } @else {
+          <i class="bi bi-three-dots"></i>
+        }
+        Más
+      </button>
 
-    <div class="nav-section-label">Gestión</div>
+      @if (mostrarMas()) {
+        <div class="sidebar-submenu" id="submenu-mas">
+          @for (modulo of mas(); track modulo.clave) {
+            <a [routerLink]="modulo.ruta" routerLinkActive="active" class="sidebar-link">
+              <i class="bi {{ modulo.icono }}"></i> {{ modulo.titulo }}
+            </a>
+          }
+        </div>
+      }
+    }
 
-    <a routerLink="administrador"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-person-gear"></i> Administrador
-    </a>
-
-    <a routerLink="inventario"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-box-seam"></i> Inventario
-    </a>
-
-    <a routerLink="usuarios"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-people"></i> Usuarios
-    </a>
-
-    <a routerLink="compras"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-bag"></i> Compras Internas
-    </a>
-
-    <a routerLink="reportes"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-bar-chart"></i> Reportes
-    </a>
-
-    <a routerLink="mas" routerLinkActive="active" 
-    class="sidebar-link">
-    <i class="bi bi-three-dots"></i> Más
-    </a>
-
-
-    <div class="nav-section-label">Sistema</div>
-
-    <a routerLink="ajustes"
-       routerLinkActive="active"
-       class="sidebar-link">
-      <i class="bi bi-gear"></i> Ajustes
-    </a>
+    @if (sistema().length > 0) {
+      <div class="nav-section-label">Sistema</div>
+      @for (modulo of sistema(); track modulo.clave) {
+        <a [routerLink]="modulo.ruta" routerLinkActive="active" class="sidebar-link">
+          <i class="bi {{ modulo.icono }}"></i> {{ modulo.titulo }}
+        </a>
+      }
+    }
 
   </div>
 
-  <div class="sidebar-footer" (click)="closeSidebar()">
-    <a routerLink="ayuda" class="sidebar-link" style="color:rgba(255,255,255,.5);">
-      <i class="bi bi-question-circle"></i> Ayuda
-    </a>
-    <a routerLink="/login" class="sidebar-link" style="color:rgba(255,255,255,.5);">
+  <div class="sidebar-footer">
+    @if (ayuda(); as modulo) {
+      <a [routerLink]="modulo.ruta" class="sidebar-link" style="color:rgba(255,255,255,.5);">
+        <i class="bi {{ modulo.icono }}"></i> {{ modulo.titulo }}
+      </a>
+    }
+    <a role="button" tabindex="0" class="sidebar-link" style="color:rgba(255,255,255,.5); cursor: pointer;"
+       (click)="logout()" (keydown.enter)="alActivarCerrarSesion($event)" (keydown.space)="alActivarCerrarSesion($event)">
       <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
     </a>
   </div>

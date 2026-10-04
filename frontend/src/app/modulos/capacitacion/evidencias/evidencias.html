@@ -1,0 +1,159 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Evidencias de participación</h6>
+  </div>
+
+  <div class="p-3">
+    <label class="form-label" for="evidencias-capacitacion">Capacitación</label>
+    <select id="evidencias-capacitacion"
+            class="form-select mb-2"
+            [formControl]="capacitacionSeleccionada"
+            style="max-width: 420px;">
+      <option [ngValue]="null">Selecciona una capacitación</option>
+      @for (capacitacion of capacitaciones(); track capacitacion.id) {
+        <option [ngValue]="capacitacion.id">{{ capacitacion.curso_titulo }} — {{ capacitacion.fecha_inicio }}</option>
+      }
+    </select>
+
+    @if (errorCapacitaciones()) {
+      <p class="text-danger small">{{ errorCapacitaciones() }}</p>
+    }
+
+    @if (capacitacionSeleccionada.value !== null) {
+      <label class="form-label" for="evidencias-participante">Participante</label>
+      <select id="evidencias-participante"
+              class="form-select"
+              [formControl]="participanteSeleccionado"
+              style="max-width: 420px;">
+        <option [ngValue]="null">Selecciona un participante</option>
+        @for (participante of participantes(); track participante.id) {
+          <option [ngValue]="participante.id">{{ participante.empleado_nombre }}</option>
+        }
+      </select>
+
+      @if (cargandoParticipantes()) {
+        <p class="text-muted small mt-2">Cargando participantes…</p>
+      }
+      @if (errorParticipantes()) {
+        <p class="text-danger small mt-2">{{ errorParticipantes() }}</p>
+      }
+    }
+  </div>
+
+  @if (participanteSeleccionado.value === null) {
+    <p class="text-center text-muted py-4">Selecciona un participante.</p>
+  } @else {
+
+    @if (cargandoEvidencias()) {
+      <p class="text-center text-muted py-4">Cargando evidencias…</p>
+    }
+
+    @if (errorEvidencias()) {
+      <p class="text-center text-danger py-3">{{ errorEvidencias() }}</p>
+    }
+
+    @if (!cargandoEvidencias() && !errorEvidencias()) {
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Archivo</th>
+            <th role="columnheader">Fecha de subida</th>
+            @if (puedeGestionar()) {
+              <th role="columnheader">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (evidencia of paginacion.visibles(); track evidencia.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">
+                <a [href]="evidencia.archivo"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   aria-label="Abrir evidencia en una pestaña nueva">
+                  {{ nombreArchivo(evidencia.archivo) }}
+                </a>
+              </td>
+              <td data-label="Fecha de subida" role="cell">{{ evidencia.fecha_subida }}</td>
+              @if (puedeGestionar()) {
+                <td class="celda-acciones" role="cell">
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar evidencia"
+                      titulo="Eliminar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminarEvidencia"
+                      (click)="abrirEliminar(evidencia)" />
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="puedeGestionar() ? 3 : 2" class="text-center text-muted py-4">
+                Este participante aún no tiene evidencias.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+    }
+
+    @if (puedeGestionar()) {
+      <div class="p-3 border-top">
+        <label class="form-label" for="evidencias-archivo">Archivo de evidencia</label>
+        <input type="file"
+               id="evidencias-archivo"
+               #archivoInput
+               class="form-control mb-2"
+               style="max-width: 420px;"
+               (change)="onArchivoSeleccionado($event)" />
+
+        @if (errorArchivo()) {
+          <p class="text-danger small">{{ errorArchivo() }}</p>
+        }
+
+        <button type="button"
+                class="btn-primary-trainet"
+                style="width:auto;"
+                [disabled]="!archivoSeleccionado() || subiendo()"
+                (click)="subir()">
+          {{ subiendo() ? 'Subiendo…' : 'Subir' }}
+        </button>
+
+        @if (errorSubida()) {
+          <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarEvidencia" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar evidencia</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar esta evidencia? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -16,6 +16,12 @@ class ModuloGestionProveedores(models.Model):
 
 
 class Proveedor(models.Model):
+    ESTADO_CHOICES = [
+        ('sin_contratar', 'Sin contratar'),
+        ('contratado', 'Contratado'),
+        ('inactivo', 'Inactivo'),
+    ]
+
     id = models.AutoField(primary_key=True, db_column='id_proveedor')
     razon_social = models.CharField(max_length=255)
     contacto = models.CharField(max_length=255)
@@ -24,6 +30,7 @@ class Proveedor(models.Model):
     calificacion = models.IntegerField(default=0)
     rut = models.CharField(max_length=50)
     especialidad = models.CharField(max_length=255)
+    estado = models.CharField(max_length=30, choices=ESTADO_CHOICES, default='sin_contratar')
     fo_mod_prov = models.ForeignKey(ModuloGestionProveedores, on_delete=models.CASCADE, db_column='fo_mod_prov')
 
     class Meta:
@@ -50,12 +57,24 @@ class ContratoProveedor(models.Model):
     descripcion = models.CharField(max_length=255)
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
-    estado = models.CharField(max_length=50, choices=[
+    estado = models.CharField(max_length=50, default='pendiente_aprobacion', choices=[
+        ('pendiente_aprobacion', 'Pendiente de aprobación'),
         ('vigente', 'Vigente'),
         ('finalizado', 'Finalizado'),
         ('cancelado', 'Cancelado'),
+        ('rechazado', 'Rechazado'),
     ])
+    confirmacion = models.CharField(max_length=255, blank=True, default='')
+    motivo_decision = models.TextField(blank=True, default='')
+    fecha_decision = models.DateTimeField(null=True, blank=True)
+    archivo = models.FileField(upload_to='contratos_proveedor/', blank=True, null=True)
     fo_proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, db_column='fo_proveedor')
+    fo_cotizacion = models.ForeignKey('CotizacionProveedor', on_delete=models.PROTECT, null=True, blank=True, db_column='fo_cotizacion')
+    fo_usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='fo_usuario')
+    fo_aprobador = models.ForeignKey(
+        Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='fo_aprobador',
+        related_name='contratos_decididos'
+    )
 
     class Meta:
         db_table = 'contrato_proveedor'
@@ -81,9 +100,17 @@ class NecesidadCapacitacionExterna(models.Model):
 
 
 class CotizacionProveedor(models.Model):
+    ESTADO_CHOICES = [
+        ('pendiente', 'Pendiente'),
+        ('aprobada', 'Aprobada'),
+        ('rechazada', 'Rechazada'),
+    ]
+
     id = models.AutoField(primary_key=True)
     archivo = models.FileField(upload_to='cotizaciones_proveedor/')
     fecha_carga = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='pendiente')
+    fo_usuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='fo_usuario')
     fo_proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE, db_column='fo_proveedor')
 
     class Meta:

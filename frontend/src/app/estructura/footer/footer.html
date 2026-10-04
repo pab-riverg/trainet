@@ -1,28 +1,10 @@
-<nav class="bottom-nav">
+<nav class="bottom-nav" aria-label="Navegación rápida">
 
-  <a routerLink="dashboard" routerLinkActive="active">
-    <i class="bi bi-grid-1x2"></i>
-    Dashboard
-  </a>
-
-  <a routerLink="usuarios" routerLinkActive="active">
-    <i class="bi bi-people"></i>
-    Usuarios
-  </a>
-
-  <a routerLink="triny" routerLinkActive="active">
-    <i class="bi bi-robot"></i>
-    Triny
-  </a>
-
-  <a routerLink="reportes" routerLinkActive="active">
-    <i class="bi bi-bar-chart"></i>
-    Reportes
-  </a>
-
-  <a routerLink="ajustes" routerLinkActive="active">
-    <i class="bi bi-gear"></i>
-    Ajustes
-  </a>
+  @for (modulo of atajos(); track modulo.clave) {
+    <a class="bottom-nav-item" [routerLink]="modulo.ruta" routerLinkActive="active">
+      <i class="bi {{ modulo.icono }}" aria-hidden="true"></i>
+      <span class="bottom-nav-texto">{{ modulo.titulo }}</span>
+    </a>
+  }
 
 </nav>

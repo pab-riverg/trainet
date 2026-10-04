@@ -1,1 +1,66 @@
-<p>compras-internas works!</p>
+<h1 class="section-heading">Compras internas</h1>
+
+@if (!tienePermiso) {
+  <p class="text-center text-danger py-3">No tienes permiso para acceder a Compras Internas.</p>
+}
+
+@if (cargando() && tienePermiso) {
+  <p class="text-center text-muted py-4">Cargando módulo de compras internas…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3">{{ error() }}</p>
+}
+
+@if (!cargando() && !error() && moduloId(); as id) {
+
+  <div class="compras-tabs" role="tablist" aria-label="Secciones de compras internas">
+    @for (pestana of pestanas(); track pestana.id) {
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="pestanaActiva() === pestana.id"
+              [attr.aria-selected]="pestanaActiva() === pestana.id"
+              [id]="'tab-' + pestana.id"
+              [attr.aria-controls]="'panel-' + pestana.id"
+              (click)="cambiarPestana(pestana.id)">
+        <i class="bi {{ pestana.icono }}" aria-hidden="true"></i>
+        {{ pestana.etiqueta }}
+        @if (pestana.id === 'carrito' && carrito.unidades() > 0) {
+          <span class="badge bg-danger ms-1">{{ carrito.unidades() }}<span class="visually-hidden"> unidades en el carrito</span></span>
+        }
+      </button>
+    }
+  </div>
+
+  <div class="compras-tabpanel"
+       role="tabpanel"
+       [id]="'panel-' + pestanaActiva()"
+       [attr.aria-labelledby]="'tab-' + pestanaActiva()">
+
+    @if (avisoExito() && pestanaActiva() === 'mis-solicitudes') {
+      <div class="alert alert-success" role="status">
+        <i class="bi bi-check-circle me-1" aria-hidden="true"></i> {{ avisoExito() }}
+      </div>
+    }
+
+    @switch (pestanaActiva()) {
+      @case ('tienda') {
+        <app-tienda (irACarrito)="cambiarPestana('carrito')" />
+      }
+      @case ('carrito') {
+        <app-carrito (irATienda)="cambiarPestana('tienda')" (solicitudEnviada)="alEnviarSolicitud($event)" />
+      }
+      @case ('mis-solicitudes') {
+        <app-lista-solicitudes modo="propias" />
+      }
+      @case ('solicitudes') {
+        <app-lista-solicitudes modo="todas" />
+      }
+      @case ('catalogo') {
+        <app-catalogo [moduloId]="id" />
+      }
+    }
+  </div>
+
+}

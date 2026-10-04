@@ -1,1 +1,34 @@
-<p>ajustes works!</p>
+<div class="ajustes">
+  <h1 class="section-heading">Ajustes</h1>
+
+  <ul class="ajustes-lista card-widget">
+    <li class="ajustes-fila">
+      <div class="ajustes-texto">
+        <span class="ajustes-titulo" id="ajuste-apariencia">Apariencia</span>
+        <span class="ajustes-detalle">Modo oscuro</span>
+      </div>
+      <label class="toggle-switch">
+        <input type="checkbox" aria-labelledby="ajuste-apariencia" [checked]="tema.modoOscuro()" (change)="tema.alternar()" />
+        <span class="toggle-slider"></span>
+      </label>
+    </li>
+
+    <li class="ajustes-fila">
+      <div class="ajustes-texto">
+        <span class="ajustes-titulo">Mi perfil</span>
+        <span class="ajustes-detalle">Datos personales, teléfono y contraseña</span>
+      </div>
+      <a routerLink="/perfil" class="ajustes-enlace">Ir a mi perfil <i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+    </li>
+
+    <li class="ajustes-fila">
+      <div class="ajustes-texto">
+        <span class="ajustes-titulo">Cerrar sesión</span>
+        <span class="ajustes-detalle">Salir de TRAINET en este dispositivo</span>
+      </div>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="cerrarSesion()">
+        <i class="bi bi-box-arrow-left" aria-hidden="true"></i> Cerrar sesión
+      </button>
+    </li>
+  </ul>
+</div>

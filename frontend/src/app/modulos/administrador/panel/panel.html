@@ -1,0 +1,61 @@
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando panel…</p>
+}
+
+@if (error()) {
+  <div class="text-center py-3" role="alert">
+    <p class="text-danger">{{ error() }}</p>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="cargar()">Reintentar</button>
+  </div>
+}
+
+@if (panel(); as p) {
+  <div class="sistema-tarjetas mb-4">
+    <div class="sistema-tarjeta">
+      <div class="sistema-valor">{{ p.sistema.version || '—' }}</div>
+      <div class="sistema-etiqueta">Versión del sistema</div>
+    </div>
+    <div class="sistema-tarjeta">
+      <div class="sistema-valor">{{ formatearFechaIso(p.sistema.fecha_instalacion) }}</div>
+      <div class="sistema-etiqueta">Fecha de instalación</div>
+    </div>
+    <div class="sistema-tarjeta">
+      <div class="sistema-valor">{{ formatearNumero(p.sistema.usuarios_activos) }}</div>
+      <div class="sistema-etiqueta">Usuarios activos</div>
+    </div>
+    <div class="sistema-tarjeta">
+      <div class="sistema-valor sistema-texto">{{ p.sistema.nombre_equipo }}</div>
+      <div class="sistema-etiqueta">Equipo de trabajo</div>
+    </div>
+  </div>
+
+  <div class="requisitos">
+    @for (requisito of p.requisitos; track requisito.clave) {
+      <section class="requisito users-table-card">
+        <div class="requisito-cuerpo">
+          <h2 class="h6 requisito-titulo">
+            <i class="bi {{ destino[requisito.clave].icono }}" aria-hidden="true"></i> {{ requisito.titulo }}
+          </h2>
+          <p class="small text-muted">{{ requisito.descripcion }}</p>
+
+          <dl class="requisito-indicadores">
+            @for (indicador of requisito.indicadores; track indicador.etiqueta) {
+              <div class="requisito-fila">
+                <dt>{{ indicador.etiqueta }}</dt>
+                <dd>{{ formatearNumero(indicador.valor) }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+
+        <div class="requisito-pie">
+          <p class="small mb-2">Esta función se gestiona en el módulo <strong>{{ destino[requisito.clave].modulo }}</strong>.</p>
+          <a class="btn-primary-trainet" style="width:auto; display:inline-block; text-decoration:none;"
+             [routerLink]="destino[requisito.clave].ruta">
+            Ir a {{ destino[requisito.clave].modulo }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </a>
+        </div>
+      </section>
+    }
+  </div>
+}

@@ -1,0 +1,182 @@
+<section class="triny-chat" aria-label="Chat con Triny">
+
+  <div class="triny-mensajes" #contenedor role="log" aria-live="polite">
+    @if (mensajes().length === 0 && !escribiendo()) {
+      <div class="triny-inicio">
+        <i class="bi bi-robot triny-inicio-icono" aria-hidden="true"></i>
+        <p class="triny-inicio-pequeno">Pregúntale a Triny</p>
+        <h2 class="triny-inicio-titulo">¿En qué piensas hoy?</h2>
+        <p class="triny-inicio-ayuda">Elige un tema con el botón + o escribe tu pregunta</p>
+      </div>
+    }
+    @for (mensaje of mensajes(); track mensaje.id) {
+      <div class="triny-fila" [class.triny-fila-usuario]="mensaje.rol === 'usuario'">
+        <div class="triny-burbuja"
+             [class.triny-burbuja-usuario]="mensaje.rol === 'usuario'"
+             [class.triny-burbuja-error]="mensaje.error">
+          @if (mensaje.rol === 'bot') {
+            <span class="visually-hidden">Triny: </span>
+          } @else {
+            <span class="visually-hidden">Tú: </span>
+          }
+          <span class="triny-texto">{{ mensaje.texto }}</span>
+
+          @if (mensaje.archivo; as archivo) {
+            <div class="mt-2">
+              <button type="button" class="btn-corporate triny-boton" (click)="descargar(archivo)">
+                <i class="bi bi-download" aria-hidden="true"></i> Descargar {{ archivo.nombre }}
+              </button>
+            </div>
+          }
+
+          @if (mensaje.sugerencias; as sugerencias) {
+            <div class="triny-opciones mt-2">
+              @for (sugerencia of sugerencias; track sugerencia.id) {
+                <button type="button" class="btn-corporate triny-boton" [disabled]="escribiendo()"
+                        (click)="elegirPregunta(sugerencia)">
+                  {{ sugerencia.pregunta }}
+                </button>
+              }
+            </div>
+          }
+
+          @if (mensaje.sinRespuesta) {
+            <div class="triny-opciones mt-2">
+              <button type="button" class="btn-corporate triny-boton" (click)="reportarASoporte()">
+                <i class="bi bi-life-preserver" aria-hidden="true"></i> Reportar a Soporte Técnico
+              </button>
+              <button type="button" class="btn-corporate triny-boton" (click)="volverAlMenu()">
+                <i class="bi bi-list" aria-hidden="true"></i> Ver menú
+              </button>
+            </div>
+          }
+
+          @if (mensaje.valoracion; as valoracion) {
+            <div class="triny-valoracion mt-2">
+              <span class="small">¿Te sirvió?</span>
+              <button type="button" class="btn-corporate triny-boton"
+                      [disabled]="valoracion.estado !== 'pendiente'"
+                      (click)="valorar(mensaje, true)">
+                <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> Sí
+              </button>
+              <button type="button" class="btn-corporate triny-boton"
+                      [disabled]="valoracion.estado !== 'pendiente'"
+                      (click)="valorar(mensaje, false)">
+                <i class="bi bi-hand-thumbs-down" aria-hidden="true"></i> No
+              </button>
+              @if (valoracion.estado === 'util') {
+                <app-estado-badge dominio="asistente" valor="valorada_util" etiqueta="Valorada: útil" />
+              }
+              @if (valoracion.estado === 'no_util') {
+                <app-estado-badge dominio="asistente" valor="valorada_no_util" etiqueta="Valorada: no útil" />
+              }
+            </div>
+            @if (valoracion.errorValorar) {
+              <p class="text-danger small mb-0 mt-1">{{ valoracion.errorValorar }}</p>
+            }
+            @if (valoracion.estado === 'util' || valoracion.estado === 'no_util') {
+              <div class="triny-opciones mt-2">
+                @if (valoracion.estado === 'no_util') {
+                  <button type="button" class="btn-corporate triny-boton" (click)="reportarASoporte()">
+                    <i class="bi bi-life-preserver" aria-hidden="true"></i> Reportar a Soporte Técnico
+                  </button>
+                }
+                <button type="button" class="btn-corporate triny-boton" (click)="volverAlMenu()">
+                  <i class="bi bi-list" aria-hidden="true"></i> Volver al menú
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    @if (escribiendo()) {
+      <div class="triny-fila">
+        <div class="triny-burbuja text-muted" role="status">Triny está escribiendo…</div>
+      </div>
+    }
+  </div>
+
+  @if (errorMenu() || categoriaActiva()) {
+    <div class="triny-tema">
+      @if (errorMenu()) {
+        <p class="triny-error small mb-1">{{ errorMenu() }}</p>
+      }
+      @if (categoriaActiva(); as categoria) {
+        <div class="triny-opciones">
+          <button type="button" class="btn-corporate triny-boton" (click)="volverACategorias()">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Volver
+          </button>
+          <strong class="small align-self-center">
+            <i class="bi {{ categoria.icono }}" aria-hidden="true"></i> {{ categoria.nombre }}
+          </strong>
+        </div>
+        @if (cargandoPreguntas()) {
+          <p class="text-muted small mb-0 mt-2">Cargando preguntas…</p>
+        }
+        <div class="triny-opciones mt-2">
+          @for (pregunta of preguntasCategoria(); track pregunta.id) {
+            <button type="button" class="btn-corporate triny-boton" [disabled]="escribiendo()"
+                    (click)="elegirPregunta(pregunta)">
+              {{ pregunta.pregunta }}
+            </button>
+          } @empty {
+            @if (!cargandoPreguntas() && !errorMenu()) {
+              <p class="text-muted small mb-0">Esta categoría aún no tiene preguntas.</p>
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <form class="triny-entrada" [formGroup]="chatForm" (ngSubmit)="enviar()" #raizEntrada>
+    <label class="visually-hidden" for="triny-texto">Escribe tu pregunta</label>
+    <textarea id="triny-texto"
+              #campoTexto
+              class="triny-campo"
+              rows="1"
+              formControlName="texto"
+              [attr.maxlength]="maxTexto"
+              placeholder="Pregunta lo que quieras"
+              (input)="ajustarAltura()"
+              (keydown.enter)="alPulsarEnter($event)"></textarea>
+
+    <div class="triny-barra">
+      <button type="button" #botonTemas class="triny-mas"
+              aria-haspopup="menu" aria-label="Abrir temas"
+              [attr.aria-expanded]="menuTemasAbierto()"
+              (click)="alternarMenuTemas()"
+              (keydown)="alTeclearEnBotonTemas($event)">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+      </button>
+
+      <button type="submit" class="triny-enviar" aria-label="Enviar pregunta"
+              [disabled]="!chatForm.controls.texto.value.trim() || chatForm.invalid || escribiendo()">
+        <i class="bi bi-send" aria-hidden="true"></i>
+      </button>
+    </div>
+
+    @if (menuTemasAbierto()) {
+      <div class="triny-popover" role="menu" aria-label="Temas"
+           [style.bottom.px]="posicionMenuTemas().bottom"
+           [style.left.px]="posicionMenuTemas().left"
+           (keydown)="alTeclearEnMenuTemas($event)">
+        @if (cargandoMenu()) {
+          <p class="triny-popover-aviso" role="presentation">Cargando temas…</p>
+        }
+        @for (categoria of categorias(); track categoria.id) {
+          <button type="button" #itemTema role="menuitem" class="triny-popover-item" (click)="elegirTema(categoria)">
+            <i class="bi {{ categoria.icono }}" aria-hidden="true"></i> {{ categoria.nombre }}
+          </button>
+        } @empty {
+          @if (!cargandoMenu()) {
+            <p class="triny-popover-aviso" role="presentation">El asistente aún no tiene temas disponibles. Escríbeme tu pregunta.</p>
+          }
+        }
+      </div>
+    }
+  </form>
+
+</section>

@@ -1,1 +1,39 @@
-<p>triny-ai works!</p>
+<h1 class="section-heading">Triny, tu asistente virtual</h1>
+
+<div class="triny-tabs" role="tablist" aria-label="Secciones del asistente">
+  @for (pestana of pestanas(); track pestana.id) {
+    <button type="button"
+            role="tab"
+            class="filter-btn"
+            [class.active]="pestanaActiva() === pestana.id"
+            [attr.aria-selected]="pestanaActiva() === pestana.id"
+            [id]="'tab-' + pestana.id"
+            [attr.aria-controls]="'panel-' + pestana.id"
+            (click)="cambiarPestana(pestana.id)">
+      <i class="bi {{ pestana.icono }}" aria-hidden="true"></i>
+      {{ pestana.etiqueta }}
+    </button>
+  }
+</div>
+
+<div class="triny-panel" role="tabpanel" [id]="'panel-' + pestanaActiva()" [attr.aria-labelledby]="'tab-' + pestanaActiva()">
+  @switch (pestanaActiva()) {
+    @case ('asistente') {
+      <div class="triny-contenedor">
+        <app-chat-triny />
+      </div>
+    }
+    @case ('historial') {
+      <app-historial-asistente modo="propio" />
+    }
+    @case ('entrenamiento') {
+      <app-entrenamiento-asistente [precarga]="precarga()" />
+    }
+    @case ('global') {
+      <app-historial-asistente modo="global" />
+    }
+    @case ('sin-respuesta') {
+      <app-sin-respuesta (entrenar)="entrenar($event)" />
+    }
+  }
+</div>

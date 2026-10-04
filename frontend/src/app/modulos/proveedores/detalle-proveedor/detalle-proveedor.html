@@ -1,0 +1,295 @@
+<div class="modal fade" id="modalDetalleProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">{{ proveedorActual()?.razon_social }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (proveedorActual(); as p) {
+
+          <!-- Perfil -->
+          <dl class="row mb-3">
+            <dt class="col-sm-3">NIT</dt>
+            <dd class="col-sm-9">{{ p.rut | nit }}</dd>
+
+            <dt class="col-sm-3">Especialidad</dt>
+            <dd class="col-sm-9">{{ p.especialidad }}</dd>
+
+            <dt class="col-sm-3">Contacto</dt>
+            <dd class="col-sm-9">{{ p.contacto }}</dd>
+
+            <dt class="col-sm-3">Correo</dt>
+            <dd class="col-sm-9">{{ p.email }}</dd>
+
+            <dt class="col-sm-3">Teléfono</dt>
+            <dd class="col-sm-9">{{ p.telefono | telefono }}</dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+              <app-estado-badge dominio="proveedor" [valor]="p.estado" [etiqueta]="etiquetaEstadoProveedor(p.estado)" />
+            </dd>
+          </dl>
+
+          <!-- Cotizaciones -->
+          <div class="border-top pt-3 mb-3">
+            <h6>Cotizaciones</h6>
+
+            @if (cargandoCotizaciones()) {
+              <p class="text-muted small">Cargando cotizaciones…</p>
+            }
+            @if (errorCotizaciones()) {
+              <p class="text-danger small">{{ errorCotizaciones() }}</p>
+            }
+            @if (errorAccion()) {
+              <p class="text-danger small">{{ errorAccion() }}</p>
+            }
+
+            @if (!cargandoCotizaciones() && !errorCotizaciones()) {
+              <div class="table-responsive">
+              <table class="users-table tabla-tarjetas" role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th role="columnheader">Archivo</th>
+                    <th role="columnheader">Fecha de carga</th>
+                    <th role="columnheader">Estado</th>
+                    <th role="columnheader">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody role="rowgroup">
+                  @for (cotizacion of paginacionCotizaciones.visibles(); track cotizacion.id) {
+                    <tr role="row">
+                      <td class="celda-principal" role="cell">{{ nombreDeArchivo(cotizacion.archivo) }}</td>
+                      <td data-label="Fecha de carga" role="cell">{{ cotizacion.fecha_carga }}</td>
+                      <td data-label="Estado" role="cell">
+                        <app-estado-badge dominio="cotizacion" [valor]="cotizacion.estado" [etiqueta]="etiquetaEstadoCotizacion(cotizacion.estado)" />
+                      </td>
+                      <td class="celda-acciones" role="cell">
+                        <app-boton-accion accion="descargar"
+                            etiqueta="Descargar cotización"
+                            titulo="Descargar"
+                            [deshabilitado]="accionEnCurso() === cotizacion.id"
+                            (click)="descargar(cotizacion)" />
+                        @if (puedeGestionar()) {
+                          @if (cotizacion.estado !== 'aprobada') {
+                            <app-boton-accion accion="aprobar"
+                                etiqueta="Aprobar cotización"
+                                titulo="Aprobar"
+                                [deshabilitado]="accionEnCurso() === cotizacion.id"
+                                (click)="cambiarEstado(cotizacion, 'aprobada')" />
+                          }
+                          @if (cotizacion.estado !== 'rechazada') {
+                            <app-boton-accion accion="rechazar"
+                                etiqueta="Rechazar cotización"
+                                titulo="Rechazar"
+                                [deshabilitado]="accionEnCurso() === cotizacion.id"
+                                (click)="cambiarEstado(cotizacion, 'rechazada')" />
+                          }
+                          @if (cotizacionPorEliminar() === cotizacion.id) {
+                            <span class="small ms-2">¿Eliminar?</span>
+                            <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                    [disabled]="accionEnCurso() === cotizacion.id"
+                                    (click)="confirmarEliminar(cotizacion)">Sí</button>
+                            <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                    (click)="cancelarEliminar()">No</button>
+                          } @else {
+                            <app-boton-accion accion="eliminar"
+                                etiqueta="Eliminar cotización"
+                                titulo="Eliminar"
+                                (click)="pedirEliminar(cotizacion)" />
+                          }
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr role="row">
+                      <td role="cell" colspan="4" class="text-center text-muted py-3">Este proveedor aún no tiene cotizaciones.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              </div>
+              <app-paginador [total]="paginacionCotizaciones.total()" [pagina]="paginacionCotizaciones.pagina()" (cambioPagina)="paginacionCotizaciones.irA($event)" />
+            }
+
+            @if (puedeGestionar()) {
+              <div class="mt-3">
+                <label class="form-label" for="cotizacion-archivo">Subir cotización (PDF o Word, máx. 10 MB)</label>
+                <input type="file"
+                       id="cotizacion-archivo"
+                       #archivoInput
+                       class="form-control mb-2"
+                       style="max-width: 420px;"
+                       accept=".pdf,.doc,.docx"
+                       (change)="onArchivoSeleccionado($event)" />
+
+                @if (errorArchivo()) {
+                  <p class="text-danger small">{{ errorArchivo() }}</p>
+                }
+
+                <button type="button"
+                        class="btn-primary-trainet"
+                        style="width:auto;"
+                        [disabled]="!archivoSeleccionado() || subiendo()"
+                        (click)="subirCotizacion()">
+                  {{ subiendo() ? 'Subiendo…' : 'Subir cotización' }}
+                </button>
+
+                @if (errorSubida()) {
+                  <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Acuerdos e historial -->
+          <div class="border-top pt-3">
+            <h6>Acuerdos e historial de contrataciones</h6>
+
+            @if (cargandoHistorial()) {
+              <p class="text-muted small">Cargando historial…</p>
+            }
+            @if (errorHistorial()) {
+              <p class="text-danger small">{{ errorHistorial() }}</p>
+            }
+
+            @if (!cargandoHistorial() && !errorHistorial()) {
+              <div class="table-responsive">
+              <table class="users-table tabla-tarjetas" role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th role="columnheader">#</th>
+                    <th role="columnheader">Descripción</th>
+                    <th role="columnheader">Inicio</th>
+                    <th role="columnheader">Fin</th>
+                    <th role="columnheader">Estado</th>
+                    <th role="columnheader">Confirmación</th>
+                    <th role="columnheader">Decisión</th>
+                    <th role="columnheader">Archivos</th>
+                    <th role="columnheader">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody role="rowgroup">
+                  @for (contrato of paginacionAcuerdos.visibles(); track contrato.id) {
+                    <tr role="row">
+                      <td class="celda-principal celda-acuerdo" role="cell">{{ contrato.id }}</td>
+                      <td data-label="Descripción" role="cell">{{ contrato.descripcion }}</td>
+                      <td data-label="Inicio" role="cell">{{ contrato.fecha_inicio }}</td>
+                      <td data-label="Fin" role="cell">{{ contrato.fecha_fin }}</td>
+                      <td data-label="Estado" role="cell">
+                        <app-estado-badge dominio="acuerdo" [valor]="contrato.estado" [etiqueta]="etiquetaEstadoContrato(contrato.estado)" />
+                      </td>
+                      <td data-label="Confirmación" role="cell">{{ contrato.confirmacion || '—' }}</td>
+                      <td data-label="Decisión" role="cell">
+                        @if (contrato.aprobador_nombre) {
+                          <div class="small">
+                            {{ contrato.estado === 'rechazado' ? 'Rechazado' : 'Aprobado' }} por {{ contrato.aprobador_nombre }}
+                            @if (contrato.fecha_decision) {
+                              <span class="text-muted">({{ contrato.fecha_decision | date: 'dd/MM/yyyy HH:mm' }})</span>
+                            }
+                          </div>
+                          @if (contrato.motivo_decision) {
+                            <div class="small text-muted">Motivo: {{ contrato.motivo_decision }}</div>
+                          }
+                        } @else {
+                          —
+                        }
+                      </td>
+                      <td data-label="Archivos" role="cell">
+                        @if (contrato.archivo) {
+                          <app-boton-accion accion="acuerdo"
+                              etiqueta="Descargar archivo del acuerdo"
+                              titulo="Descargar acuerdo"
+                              [deshabilitado]="contratoEnCurso() === contrato.id"
+                              (click)="descargarArchivoContrato(contrato)" />
+                        }
+                        @if (contrato.fo_cotizacion) {
+                          <app-boton-accion accion="cotizacion"
+                              etiqueta="Descargar cotización asociada"
+                              titulo="Descargar cotización"
+                              [deshabilitado]="contratoEnCurso() === contrato.id"
+                              (click)="descargarCotizacionDeContrato(contrato)" />
+                        }
+                        @if (!contrato.archivo && !contrato.fo_cotizacion) {
+                          —
+                        }
+                      </td>
+                      <td class="celda-acciones" role="cell">
+                        @if (contrato.estado === 'pendiente_aprobacion') {
+                          @if (puedeAprobar()) {
+                            @if (contratoRechazando() === contrato.id) {
+                              <label class="form-label small" [for]="'motivo-' + contrato.id">Motivo del rechazo (obligatorio)</label>
+                              <textarea [id]="'motivo-' + contrato.id" class="form-control mb-1" rows="2" maxlength="1000" [formControl]="motivoControl"></textarea>
+                              <button type="button" class="btn-primary-trainet" style="width:auto;"
+                                      [disabled]="contratoEnCurso() === contrato.id"
+                                      (click)="confirmarRechazo(contrato)">Confirmar rechazo</button>
+                              <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                      (click)="cancelarRechazo()">Volver</button>
+                            } @else {
+                              <button type="button" class="btn-primary-trainet" style="width:auto;"
+                                      [disabled]="contratoEnCurso() === contrato.id"
+                                      (click)="aprobarContrato(contrato)">Aprobar</button>
+                              <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                      [disabled]="contratoEnCurso() === contrato.id"
+                                      (click)="abrirRechazo(contrato)">Rechazar</button>
+                            }
+                          } @else {
+                            <span class="small text-muted">Espera la aprobación de un directivo o administrador.</span>
+                          }
+                        } @else if (contrato.estado === 'vigente' && puedeGestionar()) {
+                          <button type="button" class="btn-corporate" style="width:auto;"
+                                  [disabled]="contratoEnCurso() === contrato.id"
+                                  (click)="cerrarAcuerdo(contrato, 'finalizado')">Finalizar</button>
+                          <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                  [disabled]="contratoEnCurso() === contrato.id"
+                                  (click)="cerrarAcuerdo(contrato, 'cancelado')">Cancelar</button>
+                        } @else if (contrato.estado === 'rechazado' && !puedeGestionar()) {
+                          —
+                        }
+                        @if (puedeGestionar() && (contrato.estado === 'pendiente_aprobacion' || contrato.estado === 'rechazado')) {
+                          @if (contratoPorEliminar() === contrato.id) {
+                            <span class="small ms-2">¿Eliminar?</span>
+                            <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                    [disabled]="contratoEnCurso() === contrato.id"
+                                    (click)="confirmarEliminarContrato(contrato)">Sí</button>
+                            <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                                    (click)="cancelarEliminarContrato()">No</button>
+                          } @else {
+                            <app-boton-accion accion="eliminar"
+                                etiqueta="Eliminar acuerdo"
+                                titulo="Eliminar"
+                                (click)="pedirEliminarContrato(contrato)" />
+                          }
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr role="row">
+                      <td role="cell" colspan="9" class="text-center text-muted py-3">Este proveedor no tiene contrataciones previas.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              </div>
+              <app-paginador [total]="paginacionAcuerdos.total()" [pagina]="paginacionAcuerdos.pagina()" (cambioPagina)="paginacionAcuerdos.irA($event)" />
+            }
+
+            @if (errorContrato()) {
+              <p class="text-danger small mt-2">{{ errorContrato() }}</p>
+            }
+          </div>
+
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>

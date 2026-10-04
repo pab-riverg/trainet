@@ -1,0 +1,148 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Categorías de artículos</h6>
+    <button type="button" class="btn-primary-trainet" (click)="abrirCrear()">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva categoría
+    </button>
+  </div>
+
+  @if (formularioAbierto()) {
+    <form class="p-3 border-bottom" [formGroup]="categoriaForm" (ngSubmit)="guardar()" #f_categoriaForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+      <h6>{{ categoriaEnEdicion() ? 'Editar categoría' : 'Nueva categoría' }}</h6>
+
+      <div class="mb-3">
+        <label class="form-label campo-obligatorio" for="cat-nombre">Nombre</label>
+        <input type="text" id="cat-nombre" class="form-control" formControlName="nombre" maxlength="100" style="max-width: 360px;"
+           [class.is-invalid]="categoriaForm.controls.nombre.invalid && categoriaForm.controls.nombre.touched" />
+        @if (categoriaForm.controls.nombre.invalid && categoriaForm.controls.nombre.touched) {
+          <div class="text-danger small">El nombre es obligatorio.</div>
+        }
+      </div>
+
+      <fieldset class="mb-3">
+        <legend class="form-label fs-6">Ícono</legend>
+        <div class="categoria-iconos">
+          @for (icono of iconos; track icono.clase) {
+            <button type="button"
+                    class="categoria-icono"
+                    [class.activo]="iconoElegido() === icono.clase"
+                    [attr.aria-pressed]="iconoElegido() === icono.clase"
+                    [attr.aria-label]="icono.etiqueta"
+                    [title]="icono.etiqueta"
+                    (click)="elegirIcono(icono.clase)">
+              <i class="bi {{ icono.clase }}" aria-hidden="true"></i>
+              <span>{{ icono.etiqueta }}</span>
+            </button>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset class="mb-3">
+        <legend class="form-label fs-6">Proveedores vinculados</legend>
+        <p class="text-muted small mb-2">
+          Estos proveedores serán los que se sugieran al cotizar artículos de esta categoría.
+        </p>
+
+        <label class="visually-hidden" for="cat-buscar-proveedor">Buscar proveedor</label>
+        <input type="search" id="cat-buscar-proveedor" class="form-control form-control-sm mb-2"
+               style="max-width: 320px;" placeholder="Buscar proveedor…" [formControl]="buscadorProveedores" />
+
+        @if (errorProveedores()) {
+          <p class="text-danger small">{{ errorProveedores() }}</p>
+        }
+
+        <div class="categoria-proveedores">
+          @for (proveedor of proveedoresFiltrados(); track proveedor.id) {
+            <div class="form-check">
+              <input class="form-check-input"
+                     type="checkbox"
+                     [id]="'prov-' + proveedor.id"
+                     [checked]="estaElegido(proveedor.id)"
+                     (change)="alternarProveedor(proveedor.id)" />
+              <label class="form-check-label" [for]="'prov-' + proveedor.id">
+                {{ proveedor.razon_social }}
+                @if (proveedor.estado === 'inactivo') {
+                  <app-estado-badge class="ms-1" dominio="catalogo" valor="Inactivo" />
+                }
+              </label>
+            </div>
+          } @empty {
+            <p class="text-muted small mb-0">No hay proveedores que coincidan.</p>
+          }
+        </div>
+        <div class="text-muted small mt-1">{{ proveedoresElegidos().length }} seleccionado(s)</div>
+      </fieldset>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+          @if (f_categoriaForm.submitted && categoriaForm.invalid && categoriaForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        <button type="button" class="btn-corporate" style="width:auto;" (click)="cerrarFormulario()">Cancelar</button>
+      </div>
+
+      @if (errorFormulario()) {
+        <p class="text-danger small mt-2">{{ errorFormulario() }}</p>
+      }
+    </form>
+  }
+
+  @if (errorEliminar()) {
+    <p class="text-danger small px-3 pt-3 mb-0">{{ errorEliminar() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando categorías…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Categoría</th>
+            <th role="columnheader">Proveedores vinculados</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (categoria of paginacion.visibles(); track categoria.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell"><i class="bi {{ categoria.icono }} me-2" aria-hidden="true"></i>{{ categoria.nombre }}</td>
+              <td data-label="Proveedores vinculados" role="cell">{{ categoria.proveedores_nombres.length ? categoria.proveedores_nombres.join(', ') : 'Sin proveedores' }}</td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar" etiqueta="Editar categoría" titulo="Editar" (click)="abrirEditar(categoria)" />
+                @if (categoriaPorEliminar() === categoria.id) {
+                  <span class="small ms-2">¿Eliminar?</span>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                          [disabled]="eliminandoId() === categoria.id"
+                          (click)="confirmarEliminar(categoria)">Sí</button>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarEliminar()">No</button>
+                } @else {
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar categoría"
+                      titulo="Eliminar"
+                      (click)="pedirEliminar(categoria)" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="3" class="text-center text-muted py-4">Aún no hay categorías.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

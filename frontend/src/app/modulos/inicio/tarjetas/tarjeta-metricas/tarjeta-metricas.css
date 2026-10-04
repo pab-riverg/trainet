@@ -1,0 +1,33 @@
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: .75rem;
+}
+
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+  padding: .75rem .9rem;
+  background: var(--app-superficie-2);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.metrica-enlace:hover {
+  background: var(--app-acento-suave);
+}
+
+.metrica-valor {
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--app-titulo);
+  overflow-wrap: anywhere;
+}
+
+.metrica-etiqueta {
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}

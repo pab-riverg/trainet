@@ -1,0 +1,61 @@
+/* Tarjeta destacada: fondo navy con texto blanco. */
+.tarjeta-destacada {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+  justify-content: center;
+}
+
+.icono {
+  font-size: 1.8rem;
+}
+
+.pregunta {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.ayuda {
+  margin: 0;
+  color: rgba(255, 255, 255, .8);
+  font-size: .9rem;
+}
+
+.formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+
+.formulario .form-control {
+  flex: 1 1 200px;
+  border-radius: 999px;
+  padding: .6rem 1rem;
+}
+
+.boton {
+  padding: .6rem 1.2rem;
+  font-weight: 700;
+  color: var(--navy);
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--accent-light);
+}
+
+.tarjeta-destacada :focus-visible {
+  outline-color: #fff;
+}
+
+/* < 992px (convención de breakpoints en styles.css): objetivo táctil de 40px. */
+@media (max-width: 991.98px) {
+  .boton {
+    min-height: 40px;
+  }
+}

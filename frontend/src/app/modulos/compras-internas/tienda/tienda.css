@@ -1,0 +1,241 @@
+.tienda-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.tienda-buscador {
+  position: relative;
+  flex: 1 1 260px;
+  max-width: 420px;
+}
+
+.tienda-buscador i {
+  position: absolute;
+  left: .85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--app-texto-tenue);
+}
+
+.tienda-buscador input {
+  padding-left: 2.4rem;
+}
+
+.tienda-boton-carrito {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.tienda-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+}
+
+.tienda-chips .filter-btn.active {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+
+.tienda-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 576px) {
+  .tienda-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 992px) {
+  .tienda-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 1400px) {
+  .tienda-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.tienda-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: box-shadow .2s;
+}
+
+.tienda-card:hover {
+  box-shadow: var(--app-sombra-elevada);
+}
+
+.tienda-imagen {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: var(--app-superficie-2);
+}
+
+.tienda-icono-bloque {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-destacada);
+  color: #fff;
+  font-size: 3.5rem;
+}
+
+.tienda-card-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1rem;
+  flex: 1;
+}
+
+.tienda-chip {
+  align-self: flex-start;
+  font-size: .72rem;
+  font-weight: 600;
+  padding: .15rem .6rem;
+  border-radius: 999px;
+  background: var(--app-acento-suave);
+  color: var(--app-titulo);
+}
+
+.tienda-nombre {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--app-titulo);
+}
+
+.tienda-descripcion {
+  font-size: .85rem;
+  color: var(--app-texto-suave);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.5em;
+}
+
+.tienda-precio {
+  margin-top: auto;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--app-titulo);
+}
+
+.tienda-precio-nota {
+  font-size: .7rem;
+  color: var(--app-texto-suave);
+  margin-bottom: .5rem;
+}
+
+.tienda-en-carrito {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--app-exito);
+}
+
+.cantidad-control {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: .25rem;
+  border: 1.5px solid var(--app-borde-control);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cantidad-control button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--app-superficie-2);
+  color: var(--app-titulo);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.cantidad-control button:hover {
+  background: var(--app-borde);
+}
+
+.cantidad-control button:focus-visible,
+.tienda-card button:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}
+
+.cantidad-control span {
+  min-width: 2.2rem;
+  text-align: center;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.tienda-vacio {
+  text-align: center;
+  color: var(--app-texto-suave);
+  padding: 3rem 1rem;
+}
+
+.tienda-vacio i {
+  display: block;
+  font-size: 2.5rem;
+  margin-bottom: .5rem;
+}
+
+/* Objetivos táctiles de 40px (< 992px; convención de breakpoints en styles.css). */
+@media (max-width: 991.98px) {
+  .cantidad-control button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* 400–575px: dos columnas si caben (por debajo, una sola). */
+@media (min-width: 400px) and (max-width: 575.98px) {
+  .tienda-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+}
+
+/* < 576px: buscador y botón del carrito a todo el ancho; imágenes con proporción fija en vez de alto fijo. */
+@media (max-width: 575.98px) {
+  .tienda-buscador {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  /* El width:auto del botón está en línea en la plantilla. */
+  .tienda-boton-carrito {
+    flex: 1 1 100%;
+    justify-content: center;
+    width: 100% !important;
+  }
+
+  .tienda-imagen,
+  .tienda-icono-bloque {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .cantidad-control {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}

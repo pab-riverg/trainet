@@ -1,0 +1,158 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Documentos institucionales</h6>
+
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalSubidaInstitucional"
+              (click)="abrirSubida()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Subir documento institucional
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando documentos institucionales…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Título</th>
+          <th role="columnheader">Descripción</th>
+          <th role="columnheader">Subido por</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Archivo</th>
+          @if (puedeGestionar()) {
+            <th role="columnheader">Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (documento of paginacion.visibles(); track documento.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ documento.titulo }}</td>
+            <td data-label="Descripción" role="cell">{{ documento.descripcion || '—' }}</td>
+            <td data-label="Subido por" role="cell">{{ documento.usuario_nombre || '—' }}</td>
+            <td data-label="Fecha" role="cell">{{ documento.fecha_subida }}</td>
+            <td data-label="Archivo" role="cell">
+              <app-boton-accion accion="abrir"
+                  etiqueta="Abrir documento institucional en una pestaña nueva"
+                  titulo="Abrir archivo"
+                  [enlace]="documento.archivo" />
+            </td>
+            @if (puedeGestionar()) {
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar documento institucional"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarInstitucional"
+                    (click)="abrirEliminar(documento)" />
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" [attr.colspan]="puedeGestionar() ? 6 : 5" class="text-center text-muted py-4">
+              No hay documentos institucionales.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarInstitucional" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar documento institucional</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar el documento "{{ documentoAEliminar()?.titulo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Subir documento institucional -->
+@if (puedeGestionar()) {
+  <div class="modal fade" id="modalSubidaInstitucional" tabindex="-1" aria-labelledby="modalSubidaInstitucionalTitulo" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form [formGroup]="subidaForm" (ngSubmit)="subir()" #f_subidaForm="ngForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalSubidaInstitucionalTitulo">Subir documento institucional</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" [disabled]="subiendo()"></button>
+          </div>
+
+          <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+          <label class="form-label campo-obligatorio" for="inst-titulo">Título</label>
+          <input type="text" id="inst-titulo" class="form-control mb-2" formControlName="titulo" maxlength="255"
+               [class.is-invalid]="subidaForm.controls.titulo.invalid && subidaForm.controls.titulo.touched" />
+          @if (subidaForm.controls.titulo.invalid && subidaForm.controls.titulo.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.titulo) }}</div>
+          }
+
+          <label class="form-label" for="inst-descripcion">Descripción (opcional)</label>
+          <input type="text" id="inst-descripcion" class="form-control mb-2" formControlName="descripcion" maxlength="255"
+               [class.is-invalid]="subidaForm.controls.descripcion.invalid && subidaForm.controls.descripcion.touched" />
+
+          <label class="form-label campo-obligatorio" for="inst-archivo">Archivo (máx. 10 MB)</label>
+          <input type="file"
+                 id="inst-archivo"
+                 #archivoInput
+                 class="form-control mb-2"
+                
+                 (change)="onArchivoSeleccionado($event)" />
+
+          @if (errorArchivo()) {
+            <p class="text-danger small">{{ errorArchivo() }}</p>
+          }
+
+          @if (errorSubida()) {
+            <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+          }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-corporate" data-bs-dismiss="modal" [disabled]="subiendo()">Cancelar</button>
+            <button type="submit" class="btn-primary-trainet" [disabled]="subiendo()">
+              {{ subiendo() ? 'Subiendo…' : 'Subir' }}
+            </button>
+            @if (f_subidaForm.submitted && subidaForm.invalid && subidaForm.touched) {
+              <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,93 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>{{ modo() === 'global' ? 'Historial global de consultas' : 'Mi historial de consultas' }}</h6>
+  </div>
+
+  @if (modo() === 'global') {
+    <form class="d-flex flex-wrap gap-3 p-3 border-bottom filtros-listado" [formGroup]="filtrosForm">
+      <div>
+        <label class="form-label" for="hist-buscar">Buscar</label>
+        <input type="search" id="hist-buscar" class="form-control" formControlName="search" placeholder="Texto o usuario…" />
+      </div>
+      <div>
+        <label class="form-label" for="hist-usuario">Usuario</label>
+        <select id="hist-usuario" class="form-select" formControlName="usuario">
+          <option [ngValue]="null">Todos</option>
+          @for (usuario of usuarios(); track usuario.id) {
+            <option [ngValue]="usuario.id">{{ usuario.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="hist-resuelta">Resultado</label>
+        <select id="hist-resuelta" class="form-select" formControlName="resuelta">
+          <option value="">Todos</option>
+          <option value="true">Resuelta</option>
+          <option value="false">Sin resolver</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-label" for="hist-util">Valoración</label>
+        <select id="hist-util" class="form-select" formControlName="util">
+          <option value="">Todas</option>
+          <option value="true">Útil</option>
+          <option value="false">No útil</option>
+        </select>
+      </div>
+      <div class="align-self-end">
+        <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar filtros</button>
+      </div>
+    </form>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando historial…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Fecha</th>
+            @if (modo() === 'global') {
+              <th role="columnheader">Usuario</th>
+            }
+            <th role="columnheader">Consulta</th>
+            <th role="columnheader">Origen</th>
+            <th role="columnheader">Resultado</th>
+            <th role="columnheader">Valoración</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (fila of paginacion.visibles(); track fila.id) {
+            <tr role="row">
+              <td data-label="Fecha" role="cell">{{ fila.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+              @if (modo() === 'global') {
+                <td data-label="Usuario" role="cell">{{ fila.usuario_nombre }}</td>
+              }
+              <td class="celda-principal" role="cell">{{ fila.texto }}</td>
+              <td data-label="Origen" role="cell">{{ fila.origen === 'menu' ? 'Menú' : 'Texto escrito' }}</td>
+              <td data-label="Resultado" role="cell"><app-estado-badge dominio="asistente" [valor]="etiquetaResuelta(fila.resuelta)" /></td>
+              <td data-label="Valoración" role="cell"><app-estado-badge dominio="asistente" [valor]="etiquetaUtil(fila.util)" /></td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="modo() === 'global' ? 6 : 5" class="text-center text-muted py-4">
+                {{ modo() === 'global' ? 'No hay consultas que coincidan con los filtros.' : 'Aún no le has preguntado nada a Triny.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

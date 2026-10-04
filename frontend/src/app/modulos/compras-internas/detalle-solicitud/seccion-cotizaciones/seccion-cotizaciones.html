@@ -1,0 +1,148 @@
+<section class="border-top pt-3 mb-3" aria-label="Cotizaciones">
+  <h6>Cotizaciones</h6>
+
+  @if (cargando()) {
+    <p class="text-muted small">Cargando cotizaciones…</p>
+  }
+  @if (errorCarga()) {
+    <p class="text-danger small">{{ errorCarga() }}</p>
+  }
+  @if (errorAccion()) {
+    <p class="text-danger small">{{ errorAccion() }}</p>
+  }
+
+  @if (!cargando() && !errorCarga()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Proveedor</th>
+            <th role="columnheader">Monto total</th>
+            <th role="columnheader">IVA</th>
+            <th role="columnheader">Cargada</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (cotizacion of cotizaciones(); track cotizacion.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">
+                {{ cotizacion.proveedor_nombre || '—' }}
+                @if (cotizacion.es_elegida) {
+                  <app-estado-badge class="ms-1" dominio="catalogo" valor="Elegida" />
+                }
+              </td>
+              <td data-label="Monto total" role="cell">{{ formatearPrecio(cotizacion.monto_total) }}</td>
+              <td data-label="IVA" role="cell">{{ cotizacion.iva ? formatearPrecio(cotizacion.iva) : '—' }}</td>
+              <td data-label="Cargada" role="cell">
+                {{ cotizacion.fecha_carga | date: 'dd/MM/yyyy HH:mm' }}
+                <div class="small text-muted">{{ cotizacion.usuario_nombre || '—' }}</div>
+              </td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="descargar"
+                    [etiqueta]="'Descargar cotización de ' + cotizacion.proveedor_nombre"
+                    titulo="Descargar"
+                    [deshabilitado]="accionEnCurso() === cotizacion.id"
+                    (click)="descargar(cotizacion)" />
+                @if (puedeEliminar() && !cotizacion.es_elegida) {
+                  @if (cotizacionPorEliminar() === cotizacion.id) {
+                    <span class="small ms-2">¿Eliminar?</span>
+                    <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                            [disabled]="accionEnCurso() === cotizacion.id"
+                            (click)="confirmarEliminar(cotizacion)">Sí</button>
+                    <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                            (click)="cancelarEliminar()">No</button>
+                  } @else {
+                    <app-boton-accion accion="eliminar"
+                        etiqueta="Eliminar cotización"
+                        titulo="Eliminar"
+                        (click)="pedirEliminar(cotizacion)" />
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="5" class="text-center text-muted py-3">Aún no hay cotizaciones para esta solicitud.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (puedeCargar()) {
+    <form class="mt-3" [formGroup]="cotizacionForm" (ngSubmit)="subir()" #f_cotizacionForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+      <h6 class="small text-uppercase text-muted">Cargar cotización</h6>
+
+      <div class="d-flex flex-wrap gap-3 mb-3">
+        <div>
+          <label class="form-label campo-obligatorio" for="cot-proveedor">Proveedor</label>
+          <select id="cot-proveedor" class="form-select" formControlName="fo_proveedor"
+           [class.is-invalid]="cotizacionForm.controls.fo_proveedor.invalid && cotizacionForm.controls.fo_proveedor.touched">
+            <option [ngValue]="null" disabled>Selecciona un proveedor</option>
+            @if (sugeridos().length > 0) {
+              <optgroup label="Sugeridos para esta solicitud">
+                @for (proveedor of sugeridos(); track proveedor.id) {
+                  <option [ngValue]="proveedor.id">{{ proveedor.razon_social }}</option>
+                }
+              </optgroup>
+            }
+            <optgroup label="Otros proveedores">
+              @for (proveedor of otros(); track proveedor.id) {
+                <option [ngValue]="proveedor.id">{{ proveedor.razon_social }}</option>
+              }
+            </optgroup>
+          </select>
+      @if (cotizacionForm.controls.fo_proveedor.invalid && cotizacionForm.controls.fo_proveedor.touched) {
+        <div class="mensaje-error">{{ mensajeControl(cotizacionForm.controls.fo_proveedor) }}</div>
+      }
+          @if (errorProveedores()) {
+            <div class="text-danger small">{{ errorProveedores() }}</div>
+          }
+        </div>
+        <div>
+          <label class="form-label campo-obligatorio" for="cot-monto">Monto total, IVA incluido ($)</label>
+          <input type="text" appMoneda id="cot-monto" class="form-control" formControlName="monto_total"
+           [class.is-invalid]="cotizacionForm.controls.monto_total.invalid && cotizacionForm.controls.monto_total.touched" />
+      @if (cotizacionForm.controls.monto_total.invalid && cotizacionForm.controls.monto_total.touched) {
+        <div class="mensaje-error">{{ mensajeControl(cotizacionForm.controls.monto_total) }}</div>
+      }
+        </div>
+        <div>
+          <label class="form-label" for="cot-iva">IVA, informativo ($, opcional)</label>
+          <input type="text" appMoneda id="cot-iva" class="form-control" formControlName="iva"
+           [class.is-invalid]="cotizacionForm.controls.iva.invalid && cotizacionForm.controls.iva.touched" />
+        </div>
+      </div>
+
+      <label class="form-label campo-obligatorio" for="cot-archivo">Archivo (PDF o Word, máx. 10 MB)</label>
+      <input type="file" id="cot-archivo" #archivoInput class="form-control mb-1" style="max-width: 420px;"
+             accept=".pdf,.doc,.docx" (change)="onArchivoSeleccionado($event)" />
+      @if (archivoSeleccionado(); as archivo) {
+        <div class="small text-muted mb-2">Seleccionado: {{ archivo.name }}</div>
+      }
+      @if (errorArchivo()) {
+        <p class="text-danger small">{{ errorArchivo() }}</p>
+      }
+
+      <button type="submit" class="btn-primary-trainet" style="width:auto;"
+              [disabled]="subiendo()">
+        {{ subiendo() ? 'Subiendo…' : 'Cargar cotización' }}
+      </button>
+          @if (f_cotizacionForm.submitted && cotizacionForm.invalid && cotizacionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+      @if (advertencia()) {
+        <div class="alert alert-warning mt-2 mb-0 py-2" role="status">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i> {{ advertencia() }}
+        </div>
+      }
+      @if (errorSubida()) {
+        <p class="text-danger small mt-2 mb-0">{{ errorSubida() }}</p>
+      }
+    </form>
+  }
+</section>

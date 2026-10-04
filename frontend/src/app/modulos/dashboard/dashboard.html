@@ -1,1 +1,49 @@
-<p>dashboard works!</p>
+<div class="dashboard-encabezado">
+  <div>
+    <h1 class="section-heading mb-0">Dashboard</h1>
+    @if (contenido(); as c) {
+      <p class="text-muted small mb-0">{{ c.subtitulo }}</p>
+    }
+  </div>
+  @if (puedeVerReportes()) {
+    <a class="btn-primary-trainet enlace-reportes" routerLink="/reportes">
+      <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Generar informe completo
+    </a>
+  }
+</div>
+
+<form class="d-flex flex-wrap align-items-end gap-3 mb-3 filtros-listado" [formGroup]="periodoForm" (ngSubmit)="aplicar()">
+  <div>
+    <label class="form-label" for="dash-desde">Desde</label>
+    <input type="date" id="dash-desde" class="form-control" formControlName="desde"
+           [class.is-invalid]="errorPeriodo()" />
+  </div>
+  <div>
+    <label class="form-label" for="dash-hasta">Hasta</label>
+    <input type="date" id="dash-hasta" class="form-control" formControlName="hasta"
+           [class.is-invalid]="errorPeriodo()" />
+  </div>
+  <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="cargando()">
+    {{ cargando() ? 'Cargando…' : 'Aplicar' }}
+  </button>
+  <button type="button" class="btn-corporate" style="width:auto;" [disabled]="cargando()" (click)="limpiar()">Limpiar</button>
+</form>
+@if (errorPeriodo()) {
+  <div class="mensaje-error mb-3" role="alert">{{ errorPeriodo() }}</div>
+}
+<p class="small text-muted">Sin fechas se muestran los últimos 30 días. Algunos indicadores reflejan el estado actual y no el periodo.</p>
+
+@if (error()) {
+  <div class="text-center py-4" role="alert">
+    <p class="text-danger">{{ error() }}</p>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="cargar()">Reintentar</button>
+  </div>
+} @else if (cargando() && !contenido()) {
+  <p class="text-center text-muted py-4" role="status">Cargando indicadores…</p>
+} @else if (contenido(); as c) {
+  @if (c.indicadores.length === 0 && c.secciones.length === 0) {
+    <p class="text-center text-muted py-4">No hay datos para el periodo seleccionado.</p>
+  } @else {
+    <app-contenido-informe [contenido]="c" />
+  }
+}

@@ -3,12 +3,14 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ContratoProveedorViewSet,
     CotizacionProveedorViewSet,
+    ModuloGestionProveedoresViewSet,
     NecesidadCapacitacionExternaViewSet,
     ProveedorViewSet,
     ServicioProveedorViewSet,
 )
 
 router = DefaultRouter()
+router.register('modulo-gestion-proveedores', ModuloGestionProveedoresViewSet, basename='modulo-gestion-proveedores')
 router.register('proveedores', ProveedorViewSet, basename='proveedor')
 router.register('servicios-proveedor', ServicioProveedorViewSet, basename='servicio-proveedor')
 router.register('contratos-proveedor', ContratoProveedorViewSet, basename='contrato-proveedor')

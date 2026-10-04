@@ -28,14 +28,29 @@ class CategoriaTicket(models.Model):
 
 
 class TicketSoporte(models.Model):
+    ESTADO_CHOICES = [
+        ('abierto', 'Abierto'),
+        ('en_proceso', 'En proceso'),
+        ('resuelto', 'Resuelto'),
+        ('cerrado', 'Cerrado'),
+    ]
+    PRIORIDAD_CHOICES = [
+        ('baja', 'Baja'),
+        ('media', 'Media'),
+        ('alta', 'Alta'),
+        ('urgente', 'Urgente'),
+    ]
+
     id = models.AutoField(primary_key=True, db_column='id_ticket')
     fecha_creacion = models.DateField(auto_now_add=True)
-    prioridad = models.CharField(max_length=255)
+    prioridad = models.CharField(max_length=255, choices=PRIORIDAD_CHOICES, default='media')
     descripcion = models.CharField(max_length=255)
-    estado = models.CharField(max_length=255)
+    estado = models.CharField(max_length=255, choices=ESTADO_CHOICES, default='abierto')
+    observaciones = models.TextField(blank=True, default='')
+    fecha_resolucion = models.DateField(null=True, blank=True)
     tiempo_resolucion = models.IntegerField(default=0)
     fo_categoria_ticket = models.ForeignKey(CategoriaTicket, on_delete=models.CASCADE, db_column='fo_categoria_ticket')
-    fo_tecnico = models.ForeignKey(TecnicoSoporte, on_delete=models.CASCADE, db_column='fo_tecnico')
+    fo_tecnico = models.ForeignKey(TecnicoSoporte, on_delete=models.SET_NULL, null=True, blank=True, db_column='fo_tecnico')
     fo_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='fo_usuario')
     fo_mod_soporte = models.ForeignKey(ModuloSoporteTecnico, on_delete=models.CASCADE, db_column='fo_mod_soporte')
 

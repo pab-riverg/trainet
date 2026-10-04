@@ -1,0 +1,113 @@
+.ayuda {
+  max-width: min(var(--contenido-max), 900px);
+  margin-inline: auto;
+}
+
+.ayuda .card-widget {
+  height: auto;
+}
+
+.ayuda-titulo {
+  margin: 0 0 .75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.ayuda-accesos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.ayuda-preguntas {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.ayuda-pregunta {
+  border: 1px solid var(--app-borde);
+  border-radius: 10px;
+  background: var(--app-superficie);
+}
+
+.ayuda-pregunta summary {
+  padding: .65rem 1rem;
+  font-weight: 600;
+  color: var(--app-titulo);
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.ayuda-pregunta summary:focus-visible {
+  outline: 2px solid var(--accion-foco);
+  outline-offset: 1px;
+}
+
+.ayuda-pregunta[open] summary {
+  background: var(--app-superficie-2);
+}
+
+.ayuda-respuesta {
+  margin: 0;
+  padding: .75rem 1rem 1rem;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: var(--app-titulo);
+}
+
+.ayuda-modulos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: .5rem;
+}
+
+.ayuda-modulo {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .6rem .8rem;
+  background: var(--app-superficie-2);
+  border-radius: 10px;
+  color: var(--app-titulo);
+  text-decoration: none;
+}
+
+.ayuda-modulo:hover {
+  background: var(--app-acento-suave);
+}
+
+.ayuda-modulo i {
+  font-size: 1.1rem;
+  color: var(--app-acento);
+}
+
+.ayuda-modulo-texto {
+  display: flex;
+  flex-direction: column;
+  font-size: .85rem;
+}
+
+.ayuda-modulo-texto span {
+  color: var(--app-texto-suave);
+}
+
+/* < 992px (convención de breakpoints en styles.css): objetivo táctil de 40px en cada pregunta. */
+@media (max-width: 991.98px) {
+  .ayuda-pregunta summary {
+    min-height: 40px;
+  }
+}
+
+/* < 576px: los accesos rápidos a todo el ancho (su width:auto está en línea en la plantilla). */
+@media (max-width: 575.98px) {
+  .ayuda-accesos > a {
+    flex: 1 1 100%;
+    width: 100% !important;
+    text-align: center;
+  }
+}

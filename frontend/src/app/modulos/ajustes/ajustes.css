@@ -1,0 +1,86 @@
+.ajustes {
+  max-width: min(var(--contenido-max), 720px);
+  margin-inline: auto;
+}
+
+.ajustes-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: auto;
+}
+
+.ajustes-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 1.25rem;
+  border-bottom: 1px solid var(--app-borde);
+}
+
+.ajustes-fila:last-child {
+  border-bottom: none;
+}
+
+.ajustes-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ajustes-titulo {
+  font-weight: 600;
+  color: var(--app-titulo);
+}
+
+.ajustes-detalle {
+  font-size: .82rem;
+  color: var(--app-texto-suave);
+}
+
+.ajustes-enlace {
+  flex: 0 0 auto;
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--app-acento);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ajustes-enlace:hover {
+  text-decoration: underline;
+}
+
+/* < 992px (convención de breakpoints en styles.css): objetivos táctiles de 40px. */
+@media (max-width: 991.98px) {
+  .ajustes-enlace {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+  }
+
+  /* El área pulsable del interruptor crece (el dibujo mide lo mismo). */
+  .toggle-switch {
+    height: 40px;
+  }
+
+  .toggle-slider {
+    inset: 10px 0;
+  }
+}
+
+/* < 576px: las filas envuelven en vez de desbordar y el enlace puede partirse. */
+@media (max-width: 575.98px) {
+  .ajustes-fila {
+    flex-wrap: wrap;
+  }
+
+  .ajustes-texto {
+    flex: 1 1 12rem;
+  }
+
+  .ajustes-enlace {
+    white-space: normal;
+  }
+}

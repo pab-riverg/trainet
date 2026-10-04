@@ -1,0 +1,140 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Reportar un incidente</h6>
+  </div>
+
+  <form class="p-3" [formGroup]="ticketForm" (ngSubmit)="enviar()" #f_ticketForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+
+    <div class="mb-3">
+      <label class="form-label campo-obligatorio" for="ticket-descripcion">Descripción del problema</label>
+      <textarea id="ticket-descripcion" class="form-control" rows="3" maxlength="255" formControlName="descripcion"
+           [class.is-invalid]="ticketForm.controls.descripcion.invalid && ticketForm.controls.descripcion.touched"></textarea>
+      @if (ticketForm.controls.descripcion.invalid && ticketForm.controls.descripcion.touched) {
+        <div class="text-danger small">La descripción es obligatoria (máximo 255 caracteres).</div>
+      }
+    </div>
+
+    <div class="d-flex flex-wrap gap-3 mb-3 filtros-listado">
+      <div>
+        <label class="form-label campo-obligatorio" for="ticket-prioridad">Prioridad</label>
+        <select id="ticket-prioridad" class="form-select" formControlName="prioridad"
+           [class.is-invalid]="ticketForm.controls.prioridad.invalid && ticketForm.controls.prioridad.touched">
+          @for (prioridad of prioridades; track prioridad.codigo) {
+            <option [ngValue]="prioridad.codigo">{{ prioridad.etiqueta }}</option>
+          }
+        </select>
+      @if (ticketForm.controls.prioridad.invalid && ticketForm.controls.prioridad.touched) {
+        <div class="mensaje-error">{{ mensajeControl(ticketForm.controls.prioridad) }}</div>
+      }
+      </div>
+      <div>
+        <label class="form-label campo-obligatorio" for="ticket-categoria">Categoría / área</label>
+        <select id="ticket-categoria" class="form-select" formControlName="fo_categoria_ticket"
+           [class.is-invalid]="ticketForm.controls.fo_categoria_ticket.invalid && ticketForm.controls.fo_categoria_ticket.touched">
+          <option [ngValue]="null" disabled>Selecciona una categoría</option>
+          @for (categoria of categorias(); track categoria.id) {
+            <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+          }
+        </select>
+      @if (ticketForm.controls.fo_categoria_ticket.invalid && ticketForm.controls.fo_categoria_ticket.touched) {
+        <div class="mensaje-error">{{ mensajeControl(ticketForm.controls.fo_categoria_ticket) }}</div>
+      }
+        @if (errorCategorias()) {
+          <div class="text-danger small">{{ errorCategorias() }}</div>
+        }
+      </div>
+    </div>
+
+    <label class="form-label" for="ticket-archivo">Evidencia (opcional, máx. 10 MB)</label>
+    <input type="file"
+           id="ticket-archivo"
+           #archivoInput
+           class="form-control mb-2"
+           style="max-width: 420px;"
+           accept=".png,.jpg,.jpeg,.pdf,.txt,.log,.doc,.docx"
+           (change)="onArchivoSeleccionado($event)" />
+
+    @if (errorArchivo()) {
+      <p class="text-danger small">{{ errorArchivo() }}</p>
+    }
+
+    <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="enviando()">
+      {{ enviando() ? 'Enviando…' : 'Enviar reporte' }}
+    </button>
+          @if (f_ticketForm.submitted && ticketForm.invalid && ticketForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+    @if (exitoEnvio()) {
+      <p class="text-success small mt-2">{{ exitoEnvio() }}</p>
+    }
+    @if (avisoEnvio()) {
+      <p class="text-warning small mt-2">{{ avisoEnvio() }}</p>
+    }
+    @if (errorEnvio()) {
+      <p class="text-danger small mt-2">{{ errorEnvio() }}</p>
+    }
+  </form>
+
+</div>
+
+<div class="users-table-card mt-3">
+
+  <div class="users-table-header">
+    <h6>Mis tickets</h6>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando tickets…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">#</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Categoría</th>
+          <th role="columnheader">Prioridad</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Técnico</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (ticket of paginacion.visibles(); track ticket.id) {
+          <tr role="row">
+            <td class="celda-principal celda-ticket" role="cell">{{ ticket.id }}</td>
+            <td data-label="Fecha" role="cell">{{ ticket.fecha_creacion }}</td>
+            <td data-label="Categoría" role="cell">{{ ticket.categoria_nombre || '—' }}</td>
+            <td data-label="Prioridad" role="cell"><app-estado-badge dominio="prioridad" [valor]="ticket.prioridad" [etiqueta]="etiquetaPrioridad(ticket.prioridad)" /></td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="ticket" [valor]="ticket.estado" [etiqueta]="etiquetaEstado(ticket.estado)" /></td>
+            <td data-label="Técnico" role="cell">{{ ticket.tecnico_nombre || 'Sin asignar' }}</td>
+            <td class="celda-acciones" role="cell">
+              <app-boton-accion accion="ver"
+                  etiqueta="Ver detalle del ticket"
+                  titulo="Ver"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalDetalleTicket"
+                  (click)="verTicket(ticket)" />
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="7" class="text-center text-muted py-4">Aún no has reportado tickets.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-ticket [ticket]="ticketSeleccionado()" [modoGestion]="false" (actualizado)="cargarTickets()" />

@@ -1,0 +1,89 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Generar informe de gestión</h6>
+  </div>
+
+  <form class="p-3" [formGroup]="informeForm" (ngSubmit)="generar()" #f_informeForm="ngForm">
+    <p class="nota-obligatorios">* Campo obligatorio</p>
+
+    <fieldset class="mb-3">
+      <legend class="form-label fs-6 campo-obligatorio">Tipo de informe</legend>
+
+      @if (cargandoTipos()) {
+        <p class="text-muted small">Cargando tipos de informe…</p>
+      }
+      @if (errorTipos()) {
+        <p class="text-danger small">{{ errorTipos() }}</p>
+      }
+
+      <div class="tipos-informe">
+        @for (tipo of tiposGenerables(); track tipo.id) {
+          <button type="button"
+                  class="tipo-informe"
+                  [class.activo]="informeForm.controls.tipo.value === tipo.clave"
+                  [attr.aria-pressed]="informeForm.controls.tipo.value === tipo.clave"
+                  (click)="elegirTipo(tipo.clave!)">
+            <i class="bi {{ iconoInforme[tipo.clave!] || 'bi-file-earmark-bar-graph' }}" aria-hidden="true"></i>
+            <strong>{{ tipo.nombre_tipo }}</strong>
+            <span>{{ descripcionInforme(tipo.clave) }}</span>
+          </button>
+        } @empty {
+          @if (!cargandoTipos() && !errorTipos()) {
+            <p class="text-muted small mb-0">No hay tipos de informe disponibles.</p>
+          }
+        }
+      </div>
+      @if (informeForm.controls.tipo.invalid && informeForm.controls.tipo.touched) {
+        <div class="mensaje-error">Elige un tipo de informe.</div>
+      }
+    </fieldset>
+
+    <div class="d-flex flex-wrap gap-3 mb-2 filtros-listado">
+      <div>
+        <label class="form-label campo-obligatorio" for="informe-desde">Desde</label>
+        <input type="date" id="informe-desde" class="form-control" formControlName="desde"
+               [class.is-invalid]="(informeForm.controls.desde.invalid && informeForm.controls.desde.touched) || errorRango()?.campo === 'desde'" />
+        @if (informeForm.controls.desde.invalid && informeForm.controls.desde.touched) {
+          <div class="mensaje-error">{{ mensajeControl(informeForm.controls.desde) }}</div>
+        } @else if (errorRango()?.campo === 'desde') {
+          <div class="mensaje-error">{{ errorRango()?.mensaje }}</div>
+        }
+      </div>
+      <div>
+        <label class="form-label campo-obligatorio" for="informe-hasta">Hasta</label>
+        <input type="date" id="informe-hasta" class="form-control" formControlName="hasta"
+               [class.is-invalid]="(informeForm.controls.hasta.invalid && informeForm.controls.hasta.touched) || errorRango()?.campo === 'hasta'" />
+        @if (informeForm.controls.hasta.invalid && informeForm.controls.hasta.touched) {
+          <div class="mensaje-error">{{ mensajeControl(informeForm.controls.hasta) }}</div>
+        } @else if (errorRango()?.campo === 'hasta') {
+          <div class="mensaje-error">{{ errorRango()?.mensaje }}</div>
+        }
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="atajo('ultimos30')">Últimos 30 días</button>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="atajo('esteMes')">Este mes</button>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="atajo('mesAnterior')">Mes anterior</button>
+    </div>
+
+    <p class="small text-muted">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      Algunos indicadores (por ejemplo, proveedores registrados o cursos en el catálogo) reflejan el estado actual
+      y no el rango elegido. El rango máximo es de 366 días.
+    </p>
+
+    <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="generando()">
+      {{ generando() ? 'Generando…' : 'Generar informe' }}
+    </button>
+    @if (f_informeForm.submitted && informeForm.invalid && informeForm.touched) {
+      <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+    }
+
+    @if (errorGenerar()) {
+      <p class="text-danger small mt-2" role="alert">{{ errorGenerar() }}</p>
+    }
+  </form>
+
+</div>

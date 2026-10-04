@@ -1,0 +1,90 @@
+:host {
+  display: block;
+}
+
+.paginador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .75rem 1.25rem 1rem;
+  border-top: 1px solid var(--app-borde);
+}
+
+.paginador-texto {
+  font-size: .82rem;
+  color: var(--app-texto-suave);
+}
+
+.paginador-lista {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paginador-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  min-width: var(--accion-tamano);
+  min-height: var(--accion-tamano);
+  padding: 0 .6rem;
+  background: none;
+  border: none;
+  border-radius: var(--accion-radio);
+  font-family: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--accion-color);
+  cursor: pointer;
+  transition: color .15s, background-color .15s;
+}
+
+.paginador-boton:hover:not(:disabled) {
+  color: var(--accion-hover-color);
+  background: var(--accion-hover-bg);
+}
+
+.paginador-boton:focus-visible {
+  outline: 2px solid var(--accion-foco);
+  outline-offset: 1px;
+}
+
+.paginador-boton:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* Página actual resaltada con los tokens de acción. */
+.paginador-numero.activa {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.paginador-elipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--accion-tamano);
+  color: var(--app-texto-suave);
+}
+
+/* < 576px (breakpoint sm; convención en styles.css): el texto y los botones se centran y los números pasan a otra fila
+   si no caben, en vez de desbordar la tarjeta. */
+@media (max-width: 575.98px) {
+  .paginador {
+    justify-content: center;
+    padding-inline: .75rem;
+    text-align: center;
+  }
+
+  .paginador-lista {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}

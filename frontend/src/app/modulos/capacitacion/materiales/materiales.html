@@ -1,0 +1,144 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Materiales educativos</h6>
+  </div>
+
+  <div class="p-3">
+    <label class="form-label" for="materiales-curso">Curso</label>
+    <select id="materiales-curso" class="form-select" [formControl]="cursoSeleccionado" style="max-width: 420px;">
+      <option [ngValue]="null">Selecciona un curso</option>
+      @for (curso of cursos(); track curso.id) {
+        <option [ngValue]="curso.id">{{ curso.titulo }}</option>
+      }
+    </select>
+
+    @if (errorCursos()) {
+      <p class="text-danger small mt-2">{{ errorCursos() }}</p>
+    }
+  </div>
+
+  @if (cursoSeleccionado.value === null) {
+    <p class="text-center text-muted py-4">Selecciona un curso.</p>
+  } @else {
+
+    @if (cargandoMateriales()) {
+      <p class="text-center text-muted py-4">Cargando materiales…</p>
+    }
+
+    @if (errorMateriales()) {
+      <p class="text-center text-danger py-3">{{ errorMateriales() }}</p>
+    }
+
+    @if (!cargandoMateriales() && !errorMateriales()) {
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Título</th>
+            <th role="columnheader">Fecha de subida</th>
+            <th role="columnheader">Archivo</th>
+            @if (puedeGestionar()) {
+              <th role="columnheader">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (material of paginacion.visibles(); track material.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ material.titulo }}</td>
+              <td data-label="Fecha de subida" role="cell">{{ material.fecha_subida }}</td>
+              <td data-label="Archivo" role="cell">
+                <app-boton-accion accion="abrir"
+                    etiqueta="Abrir archivo del material en una pestaña nueva"
+                    titulo="Abrir archivo"
+                    [enlace]="material.archivo" />
+              </td>
+              @if (puedeGestionar()) {
+                <td class="celda-acciones" role="cell">
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar material"
+                      titulo="Eliminar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminarMaterial"
+                      (click)="abrirEliminar(material)" />
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="puedeGestionar() ? 4 : 3" class="text-center text-muted py-4">
+                Este curso aún no tiene materiales.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+    }
+
+    @if (puedeGestionar()) {
+      <div class="p-3 border-top">
+        <label class="form-label" for="materiales-titulo">Título del material</label>
+        <input type="text"
+               id="materiales-titulo"
+               class="form-control mb-2"
+               [formControl]="tituloControl"
+               maxlength="255"
+               style="max-width: 420px;" />
+
+        <label class="form-label" for="materiales-archivo">Archivo</label>
+        <input type="file"
+               id="materiales-archivo"
+               #archivoInput
+               class="form-control mb-2"
+               style="max-width: 420px;"
+               (change)="onArchivoSeleccionado($event)" />
+
+        @if (errorArchivo()) {
+          <p class="text-danger small">{{ errorArchivo() }}</p>
+        }
+
+        <button type="button"
+                class="btn-primary-trainet"
+                style="width:auto;"
+                [disabled]="tituloControl.invalid || !archivoSeleccionado() || subiendo()"
+                (click)="subir()">
+          {{ subiendo() ? 'Subiendo…' : 'Subir' }}
+        </button>
+
+        @if (errorSubida()) {
+          <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarMaterial" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar material</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar el material "{{ materialAEliminar()?.titulo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

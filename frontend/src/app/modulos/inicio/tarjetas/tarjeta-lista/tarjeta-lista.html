@@ -1,0 +1,32 @@
+<section class="tarjeta" [attr.aria-label]="tarjeta().titulo">
+  <h2 class="tarjeta-titulo">{{ tarjeta().titulo }}</h2>
+
+  @if (tarjeta().items.length > 0) {
+    <ul class="items">
+      @for (item of tarjeta().items; track $index) {
+        <li>
+          <a class="item" [routerLink]="item.ruta">
+            <span class="item-texto">
+              <span class="item-titulo">{{ item.titulo }}</span>
+              <span class="item-subtitulo">{{ item.subtitulo }}</span>
+            </span>
+            @if (item.estado) {
+              <app-estado-badge [valor]="item.estado" />
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="vacio">{{ mensajeVacio() }}</p>
+  }
+
+  <div class="tarjeta-pie">
+    @if (restantes() > 0) {
+      <span class="text-muted">y {{ restantes() }} más · </span>
+    }
+    @if (tarjeta().ruta_ver_todo; as ruta) {
+      <a [routerLink]="ruta">Ver todo</a>
+    }
+  </div>
+</section>

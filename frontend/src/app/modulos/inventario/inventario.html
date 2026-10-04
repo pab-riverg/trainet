@@ -1,1 +1,494 @@
-<p>inventario works!</p>
+<h1 class="section-heading">Inventario de contenido</h1>
+
+@if (cargandoModulo()) {
+  <p class="text-center text-muted py-4">Cargando módulo de inventario…</p>
+}
+
+@if (errorModulo()) {
+  <p class="text-center text-danger py-3">{{ errorModulo() }}</p>
+}
+
+@if (!cargandoModulo() && !errorModulo() && moduloId()) {
+
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Contenido</h6>
+
+    <div class="inventario-vistas" role="tablist" aria-label="Vista del inventario">
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="vista() === 'lista'"
+              [attr.aria-selected]="vista() === 'lista'"
+              (click)="cambiarVista('lista')">
+        Lista
+      </button>
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="vista() === 'categoria'"
+              [attr.aria-selected]="vista() === 'categoria'"
+              (click)="cambiarVista('categoria')">
+        Por categoría
+      </button>
+    </div>
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalSubidaContenido"
+              (click)="abrirSubida()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Subir contenido
+      </button>
+    }
+  </div>
+
+  <!-- Filtros -->
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="inv-buscar">Buscar</label>
+      <input type="search" id="inv-buscar" class="form-control" formControlName="search" placeholder="Nombre…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="inv-filtro-tipo">Tipo</label>
+      <select id="inv-filtro-tipo" class="form-select" formControlName="tipo"
+           [class.is-invalid]="filtrosForm.controls.tipo.invalid && filtrosForm.controls.tipo.touched">
+        <option [ngValue]="null">Todos</option>
+        @for (tipo of tiposContenido; track tipo.codigo) {
+          <option [ngValue]="tipo.codigo">{{ tipo.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="inv-filtro-categoria">Categoría</label>
+      <select id="inv-filtro-categoria" class="form-select" formControlName="categoria"
+           [class.is-invalid]="filtrosForm.controls.categoria.invalid && filtrosForm.controls.categoria.touched">
+        <option [ngValue]="null">Todas</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="inv-filtro-estado">Estado</label>
+      <select id="inv-filtro-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="filtrosForm.controls.estado.invalid && filtrosForm.controls.estado.touched">
+        <option [ngValue]="null">Todos</option>
+        @for (estado of estados(); track estado.id) {
+          <option [ngValue]="estado.id">{{ estado.nombre_estado }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="inv-filtro-fecha">Fecha de creación</label>
+      <input type="date" id="inv-filtro-fecha" class="form-control" formControlName="fecha"
+           [class.is-invalid]="filtrosForm.controls.fecha.invalid && filtrosForm.controls.fecha.touched" />
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorCatalogos()) {
+    <p class="text-danger small px-3">{{ errorCatalogos() }}</p>
+  }
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando contenido…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+
+    @if (vista() === 'lista') {
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Nombre</th>
+            <th role="columnheader">Tipo</th>
+            <th role="columnheader">Categoría</th>
+            <th role="columnheader">Estado</th>
+            <th role="columnheader">Creado</th>
+            <th role="columnheader">Última actualización</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (contenido of paginacion.visibles(); track contenido.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ contenido.nombre_contenido }}</td>
+              <td data-label="Tipo" role="cell">
+                <i class="bi {{ tipoOpcion(contenido.tipo_contenido).icono }} me-1" aria-hidden="true"></i>
+                {{ tipoOpcion(contenido.tipo_contenido).etiqueta }}
+              </td>
+              <td data-label="Categoría" role="cell">{{ contenido.categoria_nombre || '—' }}</td>
+              <td data-label="Estado" role="cell">{{ contenido.estado_nombre || '—' }}</td>
+              <td data-label="Creado" role="cell">{{ contenido.fecha_creacion }}</td>
+              <td data-label="Última actualización" role="cell">
+                {{ contenido.fecha_actualizacion }}
+                @if (fueActualizado(contenido)) {
+                  <app-estado-badge class="ms-1" dominio="catalogo" valor="Actualizado" />
+                }
+              </td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="ver"
+                    etiqueta="Ver contenido en una pestaña nueva"
+                    titulo="Ver"
+                    [enlace]="contenido.archivo" />
+                <app-boton-accion accion="descargar"
+                    etiqueta="Descargar contenido"
+                    titulo="Descargar"
+                    [deshabilitado]="accionEnCurso() === contenido.id"
+                    (click)="descargar(contenido)" />
+                @if (puedeGestionar()) {
+                  <app-boton-accion accion="editar"
+                      etiqueta="Editar contenido"
+                      titulo="Editar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalContenido"
+                      (click)="abrirEditar(contenido)" />
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar contenido"
+                      titulo="Eliminar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminarContenido"
+                      (click)="abrirEliminar(contenido)" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="7" class="text-center text-muted py-4">No hay contenido que coincida.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+    } @else {
+      <div class="p-3 d-flex flex-column gap-3">
+        @for (grupo of grupos(); track grupo.nombre) {
+          <section class="inventario-grupo">
+            <h6 class="mb-2">{{ grupo.nombre }} <span class="text-muted small">({{ grupo.contenidos.length }})</span></h6>
+            <ul class="list-unstyled mb-0">
+              @for (contenido of grupo.contenidos; track contenido.id) {
+                <li class="inventario-item">
+                  <div class="flex-grow-1">
+                    <i class="bi {{ tipoOpcion(contenido.tipo_contenido).icono }} me-1" aria-hidden="true"></i>
+                    <strong>{{ contenido.nombre_contenido }}</strong>
+                    <div class="text-muted small">
+                      {{ tipoOpcion(contenido.tipo_contenido).etiqueta }} · {{ contenido.estado_nombre || '—' }} ·
+                      Actualizado: {{ contenido.fecha_actualizacion }}
+                      @if (fueActualizado(contenido)) {
+                        <app-estado-badge class="ms-1" dominio="catalogo" valor="Actualizado" />
+                      }
+                    </div>
+                  </div>
+                  <div>
+                    <app-boton-accion accion="ver"
+                        etiqueta="Ver contenido en una pestaña nueva"
+                        titulo="Ver"
+                        [enlace]="contenido.archivo" />
+                    <app-boton-accion accion="descargar"
+                        etiqueta="Descargar contenido"
+                        titulo="Descargar"
+                        [deshabilitado]="accionEnCurso() === contenido.id"
+                        (click)="descargar(contenido)" />
+                  </div>
+                </li>
+              }
+            </ul>
+          </section>
+        } @empty {
+          <p class="text-center text-muted py-4">No hay contenido que coincida.</p>
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+}
+
+<!-- Alta rápida de categoría/estado (reutilizada en subida y edición) -->
+<ng-template #nuevoCatalogo>
+  <div class="mt-2 d-flex gap-2 align-items-end flex-wrap">
+    <div>
+      <label class="form-label campo-obligatorio" for="inv-nombre-nuevo">
+        {{ catalogoNuevo() === 'categoria' ? 'Nombre de la categoría' : 'Nombre del estado' }}
+      </label>
+      <input type="text" id="inv-nombre-nuevo" class="form-control" [formControl]="nombreNuevoControl" [class.is-invalid]="nombreNuevoControl.invalid && nombreNuevoControl.touched" maxlength="255" />
+      @if (nombreNuevoControl.invalid && nombreNuevoControl.touched) {
+        <div class="mensaje-error">{{ mensajeControl(nombreNuevoControl) }}</div>
+      }
+    </div>
+    <button type="button"
+            class="btn-primary-trainet"
+            style="width:auto;"
+            [disabled]="guardandoNuevo()"
+            (click)="guardarNuevoCatalogo()">
+      {{ guardandoNuevo() ? 'Guardando…' : 'Guardar' }}
+    </button>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="cancelarNuevoCatalogo()">Cancelar</button>
+  </div>
+  @if (errorNuevo()) {
+    <div class="text-danger small">{{ errorNuevo() }}</div>
+  }
+</ng-template>
+
+<!-- Modal Editar contenido -->
+<div class="modal fade" id="modalContenido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="edicionForm" (ngSubmit)="guardarEdicion()" #f_edicionForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+        <div class="modal-header">
+          <h5 class="modal-title">Editar contenido</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+
+          @if (errorEdicion()) {
+            <p class="text-danger small">{{ errorEdicion() }}</p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-inv-nombre">Nombre</label>
+            <input type="text" id="edit-inv-nombre" class="form-control" formControlName="nombre_contenido" maxlength="255"
+           [class.is-invalid]="edicionForm.controls.nombre_contenido.invalid && edicionForm.controls.nombre_contenido.touched" />
+            @if (edicionForm.controls.nombre_contenido.invalid && edicionForm.controls.nombre_contenido.touched) {
+              <div class="text-danger small">El nombre es obligatorio (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-inv-tipo">Tipo</label>
+            <select id="edit-inv-tipo" class="form-select" formControlName="tipo_contenido"
+           [class.is-invalid]="edicionForm.controls.tipo_contenido.invalid && edicionForm.controls.tipo_contenido.touched">
+              @for (tipo of tiposContenido; track tipo.codigo) {
+                <option [ngValue]="tipo.codigo">{{ tipo.etiqueta }}</option>
+              }
+            </select>
+      @if (edicionForm.controls.tipo_contenido.invalid && edicionForm.controls.tipo_contenido.touched) {
+        <div class="mensaje-error">{{ mensajeControl(edicionForm.controls.tipo_contenido) }}</div>
+      }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-inv-categoria">Categoría</label>
+            <div class="d-flex gap-2">
+              <select id="edit-inv-categoria" class="form-select" formControlName="fo_categoria_cont"
+           [class.is-invalid]="edicionForm.controls.fo_categoria_cont.invalid && edicionForm.controls.fo_categoria_cont.touched">
+                <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                @for (categoria of categorias(); track categoria.id) {
+                  <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+                }
+              </select>
+      @if (edicionForm.controls.fo_categoria_cont.invalid && edicionForm.controls.fo_categoria_cont.touched) {
+        <div class="mensaje-error">{{ mensajeControl(edicionForm.controls.fo_categoria_cont) }}</div>
+      }
+              <app-boton-accion accion="agregar"
+                  etiqueta="Agregar categoría nueva"
+                  titulo="Agregar categoría"
+                  (click)="abrirNuevoCatalogo('categoria', 'edicion')" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="edit-inv-estado">Estado</label>
+            <div class="d-flex gap-2">
+              <select id="edit-inv-estado" class="form-select" formControlName="fo_estado_cont"
+           [class.is-invalid]="edicionForm.controls.fo_estado_cont.invalid && edicionForm.controls.fo_estado_cont.touched">
+                <option [ngValue]="null" disabled>Selecciona un estado</option>
+                @for (estado of estados(); track estado.id) {
+                  <option [ngValue]="estado.id">{{ estado.nombre_estado }}</option>
+                }
+              </select>
+      @if (edicionForm.controls.fo_estado_cont.invalid && edicionForm.controls.fo_estado_cont.touched) {
+        <div class="mensaje-error">{{ mensajeControl(edicionForm.controls.fo_estado_cont) }}</div>
+      }
+              <app-boton-accion accion="agregar"
+                  etiqueta="Agregar estado nuevo"
+                  titulo="Agregar estado"
+                  (click)="abrirNuevoCatalogo('estado', 'edicion')" />
+            </div>
+          </div>
+
+          @if (catalogoNuevo() && formularioDestino() === 'edicion') {
+            <ng-container *ngTemplateOutlet="nuevoCatalogo" />
+          }
+
+          <div class="mb-3">
+            <label class="form-label" for="edit-inv-reemplazo">Reemplazar archivo (opcional, máx. 50 MB)</label>
+            <input type="file"
+                   id="edit-inv-reemplazo"
+                   #reemplazoInput
+                   class="form-control"
+                   accept=".mp4,.webm,.mov,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                   (change)="onReemplazoSeleccionado($event)" />
+            @if (errorReemplazo()) {
+              <div class="text-danger small">{{ errorReemplazo() }}</div>
+            }
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_edicionForm.submitted && edicionForm.invalid && edicionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarContenido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar contenido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar "{{ contenidoAEliminar()?.nombre_contenido }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Subir contenido -->
+@if (puedeGestionar()) {
+  <div class="modal fade" id="modalSubidaContenido" tabindex="-1" aria-labelledby="modalSubidaContenidoTitulo" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form [formGroup]="subidaForm" (ngSubmit)="subir()" #f_subidaForm="ngForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalSubidaContenidoTitulo">Subir contenido</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" [disabled]="subiendo()"></button>
+          </div>
+
+          <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+          <div class="d-flex flex-column gap-3">
+            <div>
+              <label class="form-label campo-obligatorio" for="inv-nombre">Nombre</label>
+              <input type="text" id="inv-nombre" class="form-control" formControlName="nombre_contenido" maxlength="255"
+               [class.is-invalid]="subidaForm.controls.nombre_contenido.invalid && subidaForm.controls.nombre_contenido.touched" />
+          @if (subidaForm.controls.nombre_contenido.invalid && subidaForm.controls.nombre_contenido.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.nombre_contenido) }}</div>
+          }
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="inv-tipo">Tipo</label>
+              <select id="inv-tipo" class="form-select" formControlName="tipo_contenido"
+               [class.is-invalid]="subidaForm.controls.tipo_contenido.invalid && subidaForm.controls.tipo_contenido.touched">
+                @for (tipo of tiposContenido; track tipo.codigo) {
+                  <option [ngValue]="tipo.codigo">{{ tipo.etiqueta }}</option>
+                }
+              </select>
+          @if (subidaForm.controls.tipo_contenido.invalid && subidaForm.controls.tipo_contenido.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.tipo_contenido) }}</div>
+          }
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="inv-categoria">Categoría</label>
+              <div class="d-flex gap-2">
+                <select id="inv-categoria" class="form-select" formControlName="fo_categoria_cont"
+               [class.is-invalid]="subidaForm.controls.fo_categoria_cont.invalid && subidaForm.controls.fo_categoria_cont.touched">
+                  <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                  @for (categoria of categorias(); track categoria.id) {
+                    <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+                  }
+                </select>
+          @if (subidaForm.controls.fo_categoria_cont.invalid && subidaForm.controls.fo_categoria_cont.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.fo_categoria_cont) }}</div>
+          }
+                <app-boton-accion accion="agregar"
+                    etiqueta="Agregar categoría nueva"
+                    titulo="Agregar categoría"
+                    (click)="abrirNuevoCatalogo('categoria', 'subida')" />
+              </div>
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="inv-estado">Estado</label>
+              <div class="d-flex gap-2">
+                <select id="inv-estado" class="form-select" formControlName="fo_estado_cont"
+               [class.is-invalid]="subidaForm.controls.fo_estado_cont.invalid && subidaForm.controls.fo_estado_cont.touched">
+                  <option [ngValue]="null" disabled>Selecciona un estado</option>
+                  @for (estado of estados(); track estado.id) {
+                    <option [ngValue]="estado.id">{{ estado.nombre_estado }}</option>
+                  }
+                </select>
+          @if (subidaForm.controls.fo_estado_cont.invalid && subidaForm.controls.fo_estado_cont.touched) {
+            <div class="mensaje-error">{{ mensajeControl(subidaForm.controls.fo_estado_cont) }}</div>
+          }
+                <app-boton-accion accion="agregar"
+                    etiqueta="Agregar estado nuevo"
+                    titulo="Agregar estado"
+                    (click)="abrirNuevoCatalogo('estado', 'subida')" />
+              </div>
+            </div>
+          </div>
+
+          @if (catalogoNuevo() && formularioDestino() === 'subida') {
+            <ng-container *ngTemplateOutlet="nuevoCatalogo" />
+          }
+
+          <label class="form-label mt-3 campo-obligatorio" for="inv-archivo">Archivo (máx. 50 MB)</label>
+          <input type="file"
+                 id="inv-archivo"
+                 #archivoInput
+                 class="form-control mb-2"
+                
+                 accept=".mp4,.webm,.mov,.pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                 (change)="onArchivoSeleccionado($event)" />
+
+          @if (errorArchivo()) {
+            <p class="text-danger small">{{ errorArchivo() }}</p>
+          }
+
+          @if (errorSubida()) {
+            <p class="text-danger small mt-2">{{ errorSubida() }}</p>
+          }
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-corporate" data-bs-dismiss="modal" [disabled]="subiendo()">Cancelar</button>
+            <button type="submit" class="btn-primary-trainet" [disabled]="subiendo()">
+              {{ subiendo() ? 'Subiendo…' : 'Subir' }}
+            </button>
+            @if (f_subidaForm.submitted && subidaForm.invalid && subidaForm.touched) {
+              <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

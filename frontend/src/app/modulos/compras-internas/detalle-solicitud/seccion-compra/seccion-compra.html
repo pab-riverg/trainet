@@ -1,0 +1,90 @@
+@if (puedeConfirmar() || esperaConfirmacion() || yaComprada()) {
+  <section class="border-top pt-3 mb-3" aria-label="Compra">
+    <h6>Compra</h6>
+
+    @if (puedeConfirmar()) {
+      @if (cotizaciones().length === 0) {
+        <p class="text-muted small mb-0">Cuando administración cargue cotizaciones, podrás elegir una para confirmar la compra.</p>
+      } @else {
+        <p class="mb-2">
+          Presupuesto disponible:
+          @if (presupuesto() !== null) {
+            <strong>{{ formatearPrecio(presupuesto() ?? 0) }}</strong>
+          } @else {
+            <span class="text-muted">consultando…</span>
+          }
+        </p>
+        @if (errorPresupuesto()) {
+          <p class="text-danger small">{{ errorPresupuesto() }}</p>
+        }
+
+        <fieldset class="mb-3">
+          <legend class="small text-uppercase text-muted">Elige la cotización a comprar</legend>
+          @for (cotizacion of cotizaciones(); track cotizacion.id) {
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="cotizacion-elegida"
+                     [id]="'cot-radio-' + cotizacion.id"
+                     [checked]="cotizacionElegidaId() === cotizacion.id"
+                     (change)="elegir(cotizacion.id)" />
+              <label class="form-check-label" [for]="'cot-radio-' + cotizacion.id">
+                {{ cotizacion.proveedor_nombre }} — <strong>{{ formatearPrecio(cotizacion.monto_total) }}</strong>
+              </label>
+            </div>
+          }
+        </fieldset>
+
+        @if (superaPresupuesto()) {
+          <div class="alert alert-danger py-2" role="status">
+            <i class="bi bi-exclamation-octagon me-1" aria-hidden="true"></i>
+            El monto elegido supera el presupuesto disponible. Elige otra cotización o pide al administrador que ajuste el presupuesto.
+          </div>
+        }
+
+        <label class="form-label" for="compra-comentario">Comentario (opcional)</label>
+        <textarea id="compra-comentario" class="form-control mb-2" rows="2" maxlength="1000" [formControl]="comentarioControl"></textarea>
+
+        @if (confirmando()) {
+          <span class="small me-2">
+            ¿Confirmar la compra por <strong>{{ formatearPrecio(seleccionada()?.monto_total ?? 0) }}</strong> a {{ seleccionada()?.proveedor_nombre }}?
+          </span>
+          <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="confirmarCompra()">
+            {{ enCurso() ? 'Confirmando…' : 'Sí' }}
+          </button>
+          <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarConfirmacion()">No</button>
+        } @else {
+          <button type="button" class="btn-primary-trainet" style="width:auto;"
+                  [disabled]="!seleccionada() || superaPresupuesto() || enCurso()"
+                  (click)="pedirConfirmacion()">
+            Confirmar compra
+          </button>
+        }
+      }
+
+      @if (error()) {
+        <p class="text-danger small mt-2 mb-0">{{ error() }}</p>
+      }
+    } @else if (esperaConfirmacion()) {
+      <p class="text-muted small mb-0">Espera la confirmación de compra de un directivo o administrador.</p>
+    } @else {
+      <dl class="row mb-0">
+        <dt class="col-sm-3">Proveedor</dt>
+        <dd class="col-sm-9">{{ cotizacionElegida()?.proveedor_nombre || '—' }}</dd>
+
+        <dt class="col-sm-3">Monto comprado</dt>
+        <dd class="col-sm-9">{{ cotizacionElegida() ? formatearPrecio(cotizacionElegida()!.monto_total) : '—' }}</dd>
+
+        <dt class="col-sm-3">Cotización elegida</dt>
+        <dd class="col-sm-9">{{ solicitud().fo_cotizacion_elegida ? '#' + solicitud().fo_cotizacion_elegida : '—' }}</dd>
+
+        <dt class="col-sm-3">Comprador</dt>
+        <dd class="col-sm-9">{{ solicitud().comprador_nombre || '—' }}</dd>
+
+        <dt class="col-sm-3">Fecha de compra</dt>
+        <dd class="col-sm-9">{{ solicitud().fecha_compra ? (solicitud().fecha_compra | date: 'dd/MM/yyyy HH:mm') : '—' }}</dd>
+
+        <dt class="col-sm-3">Orden de compra</dt>
+        <dd class="col-sm-9">{{ solicitud().fo_orden ? '#' + solicitud().fo_orden : '—' }}</dd>
+      </dl>
+    }
+  </section>
+}

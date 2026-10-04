@@ -1,0 +1,14 @@
+<section class="tarjeta tarjeta-destacada" aria-label="Triny, tu asistente virtual">
+  <div class="icono" aria-hidden="true"><i class="bi bi-robot"></i></div>
+  <h2 class="pregunta">¿En qué piensas hoy?</h2>
+  <p class="ayuda">Pregúntale a Triny sobre tickets, compras, recursos, cursos y más.</p>
+
+  <form class="formulario" [formGroup]="trinyForm" (ngSubmit)="irATriny()">
+    <label class="visually-hidden" for="inicio-triny">Escribe tu pregunta para Triny</label>
+    <input type="text" id="inicio-triny" class="form-control" formControlName="texto"
+           placeholder="Escribe aquí tu pregunta…" autocomplete="off" />
+    <button type="submit" class="boton">
+      Preguntar <i class="bi bi-arrow-right" aria-hidden="true"></i>
+    </button>
+  </form>
+</section>

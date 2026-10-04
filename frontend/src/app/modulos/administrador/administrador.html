@@ -1,1 +1,37 @@
-<p>administrador works!</p>
+<h1 class="section-heading">Administración</h1>
+
+@if (!tienePermiso) {
+  <p class="text-center text-danger py-3">No tienes permiso para acceder a Administración.</p>
+} @else {
+
+  <div class="admin-tabs" role="tablist" aria-label="Secciones de administración">
+    @for (pestana of pestanas; track pestana.id) {
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="pestanaActiva() === pestana.id"
+              [attr.aria-selected]="pestanaActiva() === pestana.id"
+              [id]="'tab-admin-' + pestana.id"
+              [attr.aria-controls]="'panel-admin-' + pestana.id"
+              (click)="cambiarPestana(pestana.id)">
+        <i class="bi {{ pestana.icono }}" aria-hidden="true"></i>
+        {{ pestana.etiqueta }}
+      </button>
+    }
+  </div>
+
+  <div role="tabpanel" [id]="'panel-admin-' + pestanaActiva()" [attr.aria-labelledby]="'tab-admin-' + pestanaActiva()">
+    @switch (pestanaActiva()) {
+      @case ('panel') {
+        <app-panel-administracion />
+      }
+      @case ('configuracion') {
+        <app-configuracion-sistema />
+      }
+      @case ('bitacora') {
+        <app-bitacora />
+      }
+    }
+  </div>
+
+}

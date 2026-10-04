@@ -9,7 +9,7 @@ from .models import (
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre', 'email', 'rol')
+    list_display = ('id', 'nombre', 'email', 'cedula', 'rol')
 
 
 @admin.register(Administrador)

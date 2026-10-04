@@ -1,0 +1,47 @@
+.tipos-informe {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: .75rem;
+}
+
+.tipo-informe {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .25rem;
+  padding: .75rem;
+  text-align: left;
+  background: var(--app-superficie);
+  color: var(--app-titulo);
+  border: 1.5px solid var(--app-borde-control);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tipo-informe i {
+  font-size: 1.4rem;
+}
+
+.tipo-informe span {
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}
+
+.tipo-informe:hover {
+  background: var(--app-superficie-2);
+}
+
+.tipo-informe.activo {
+  border-color: var(--app-acento);
+  box-shadow: 0 0 0 2px var(--app-acento);
+}
+
+.tipo-informe:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}
+
+legend.campo-obligatorio {
+  float: none;
+  width: auto;
+}

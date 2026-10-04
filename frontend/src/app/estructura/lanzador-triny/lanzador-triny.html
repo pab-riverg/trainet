@@ -1,0 +1,25 @@
+@if (!enPaginaDelAsistente()) {
+
+  @if (abierto()) {
+    <section class="lanzador-panel" role="dialog" aria-label="Chat con Triny">
+      <header class="lanzador-cabecera">
+        <strong><i class="bi bi-robot" aria-hidden="true"></i> Triny</strong>
+        <button type="button" class="lanzador-cerrar" (click)="cerrar()" aria-label="Cerrar el chat de Triny">
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div class="lanzador-cuerpo">
+        <app-chat-triny (reportado)="cerrar()" />
+      </div>
+    </section>
+  }
+
+  <button type="button"
+          class="lanzador-boton"
+          [attr.aria-expanded]="abierto()"
+          [attr.aria-label]="abierto() ? 'Cerrar el chat de Triny' : 'Abrir el chat de Triny'"
+          (click)="alternar()">
+    <i class="bi" [class.bi-robot]="!abierto()" [class.bi-chevron-down]="abierto()" aria-hidden="true"></i>
+  </button>
+
+}

@@ -1,1 +1,313 @@
-<p>usuarios works!</p>
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Usuarios</h6>
+
+    <div class="input-group input-group-sm" style="max-width: 220px;">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input type="text" class="form-control" placeholder="Buscar…" [formControl]="busquedaControl" />
+    </div>
+
+    <select class="form-select form-select-sm" style="max-width: 220px;" [formControl]="rolFiltroControl">
+      <option value="">Todos los roles</option>
+      @for (opcion of catalogoRoles; track opcion.codigo) {
+        <option [value]="opcion.codigo">{{ opcion.etiqueta }}</option>
+      }
+    </select>
+
+    @if (esAdministrador()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalUsuario"
+              (click)="abrirCrear()">
+        <i class="bi bi-plus-lg"></i> Nuevo usuario
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando usuarios…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Nombre</th>
+          <th role="columnheader">Email</th>
+          <th role="columnheader">Cédula</th>
+          <th role="columnheader">Teléfono</th>
+          <th role="columnheader">Rol</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Fecha de registro</th>
+          @if (esAdministrador()) {
+            <th role="columnheader">Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (usuario of paginacion.visibles(); track usuario.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ usuario.nombre }}</td>
+            <td data-label="Email" role="cell">{{ usuario.email }}</td>
+            <td data-label="Cédula" role="cell">{{ usuario.cedula | cedula }}</td>
+            <td data-label="Teléfono" role="cell">{{ usuario.telefono | telefono }}</td>
+            <td data-label="Rol" role="cell">{{ etiquetaRol(usuario.rol) }}</td>
+            <td data-label="Estado" role="cell">
+              @if (usuario.is_active) {
+                <app-estado-badge dominio="usuario" valor="Activo" />
+              } @else {
+                <app-estado-badge dominio="usuario" valor="Inactivo" />
+              }
+            </td>
+            <td data-label="Fecha de registro" role="cell">{{ usuario.fecha_registro }}</td>
+            @if (esAdministrador()) {
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalUsuario"
+                    (click)="abrirEditar(usuario)" />
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminar"
+                    (click)="abrirEliminar(usuario)" />
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" [attr.colspan]="esAdministrador() ? 7 : 6" class="text-center text-muted py-4">
+              No se encontraron usuarios.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Modal Crear / Editar usuario -->
+<div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="usuarioForm" (ngSubmit)="guardar()" #f_usuarioForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modoEdicion() ? 'Editar usuario' : 'Nuevo usuario' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          @if (errorFormulario()) {
+            <p class="text-danger small">{{ errorFormulario() }}</p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="usuario-nombre">Nombre</label>
+            <input type="text" id="usuario-nombre" class="form-control" formControlName="nombre"
+           [class.is-invalid]="usuarioForm.controls.nombre.invalid && usuarioForm.controls.nombre.touched" />
+            @if (usuarioForm.controls.nombre.invalid && usuarioForm.controls.nombre.touched) {
+              <div class="text-danger small">El nombre es obligatorio.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="usuario-email">Email</label>
+            <input type="email" id="usuario-email" class="form-control" formControlName="email"
+           [class.is-invalid]="usuarioForm.controls.email.invalid && usuarioForm.controls.email.touched" />
+            @if (usuarioForm.controls.email.invalid && usuarioForm.controls.email.touched) {
+              <div class="text-danger small">Ingresa un correo electrónico válido.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="usuario-telefono">Teléfono</label>
+            <app-campo-telefono idCampo="usuario-telefono" formControlName="telefono"
+                                [invalido]="(usuarioForm.controls.telefono.invalid && usuarioForm.controls.telefono.touched) || !!erroresApi()['telefono']" />
+            @if (usuarioForm.controls.telefono.invalid && usuarioForm.controls.telefono.touched) {
+              <div class="mensaje-error">{{ mensajeControl(usuarioForm.controls.telefono) }}</div>
+            } @else if (erroresApi()['telefono']) {
+              <div class="mensaje-error">{{ erroresApi()['telefono'] }}</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="usuario-cedula">Cédula</label>
+            <input type="text" id="usuario-cedula" class="form-control" formControlName="cedula" appSoloDigitos="10"
+                   aria-describedby="ayuda-cedula"
+                   [class.is-invalid]="(usuarioForm.controls.cedula.invalid && usuarioForm.controls.cedula.touched) || erroresApi()['cedula']" />
+            <div id="ayuda-cedula" class="form-text">Opcional. Solo dígitos, de 6 a 10.</div>
+            @if (usuarioForm.controls.cedula.invalid && usuarioForm.controls.cedula.touched) {
+              <div class="mensaje-error">{{ mensajeControl(usuarioForm.controls.cedula) }}</div>
+            } @else if (erroresApi()['cedula']) {
+              <div class="mensaje-error">{{ erroresApi()['cedula'] }}</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="usuario-rol">Rol</label>
+            <select id="usuario-rol" class="form-select" formControlName="rol"
+           [class.is-invalid]="usuarioForm.controls.rol.invalid && usuarioForm.controls.rol.touched">
+              <option value="" disabled>Selecciona un rol</option>
+              @for (opcion of catalogoRoles; track opcion.codigo) {
+                <option [value]="opcion.codigo">{{ opcion.etiqueta }}</option>
+              }
+            </select>
+            @if (usuarioForm.controls.rol.invalid && usuarioForm.controls.rol.touched) {
+              <div class="text-danger small">Selecciona un rol.</div>
+            }
+            @if (modoEdicion() && editandoPropioUsuario()) {
+              <div class="form-text">No puedes cambiar tu propio rol.</div>
+            }
+            @if (avisoCambioRol()) {
+              <div class="text-danger small">
+                Al cambiar el rol se creará el perfil del nuevo rol. El historial del perfil anterior se conserva.
+              </div>
+            }
+          </div>
+
+          @if (modoEdicion() && cargandoPerfil()) {
+            <p class="text-muted small">Cargando datos de perfil…</p>
+          }
+
+          @if (errorPerfilCarga()) {
+            <p class="text-danger small">{{ errorPerfilCarga() }}</p>
+          }
+
+          @if (rolSeleccionado() === 'empleado') {
+            <div class="mb-3">
+              <label class="form-label" [class.campo-obligatorio]="esObligatorio(usuarioForm.controls.puesto)" for="usuario-puesto">Puesto</label>
+              <input type="text" id="usuario-puesto" class="form-control" formControlName="puesto"
+           [class.is-invalid]="usuarioForm.controls.puesto.invalid && usuarioForm.controls.puesto.touched" />
+              <div class="form-text">Cargo que ocupa en la empresa (ej. Auxiliar administrativo)</div>
+              @if (usuarioForm.controls.puesto.invalid && usuarioForm.controls.puesto.touched) {
+                <div class="text-danger small">El puesto es obligatorio.</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" [class.campo-obligatorio]="esObligatorio(usuarioForm.controls.fecha_ingreso)" for="usuario-fecha-ingreso">Fecha de ingreso</label>
+              <input type="date" id="usuario-fecha-ingreso" class="form-control" formControlName="fecha_ingreso"
+           [class.is-invalid]="usuarioForm.controls.fecha_ingreso.invalid && usuarioForm.controls.fecha_ingreso.touched" />
+              <div class="form-text">Día en que ingresó a la empresa</div>
+              @if (usuarioForm.controls.fecha_ingreso.invalid && usuarioForm.controls.fecha_ingreso.touched) {
+                <div class="text-danger small">La fecha de ingreso es obligatoria.</div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" [class.campo-obligatorio]="esObligatorio(usuarioForm.controls.fo_supervisor)" for="usuario-supervisor">Supervisor</label>
+              <select id="usuario-supervisor" class="form-select" formControlName="fo_supervisor"
+           [class.is-invalid]="usuarioForm.controls.fo_supervisor.invalid && usuarioForm.controls.fo_supervisor.touched">
+                <option [ngValue]="null" disabled>Selecciona un supervisor</option>
+                @for (supervisor of supervisores(); track supervisor.id) {
+                  <option [ngValue]="supervisor.id">{{ supervisor.fo_usuario_nombre }}</option>
+                }
+              </select>
+              <div class="form-text">Quién supervisa a este empleado</div>
+
+              @if (usuarioForm.controls.fo_supervisor.invalid && usuarioForm.controls.fo_supervisor.touched) {
+                <div class="text-danger small">Selecciona un supervisor.</div>
+              }
+              @if (errorSupervisores()) {
+                <div class="text-danger small">{{ errorSupervisores() }}</div>
+              }
+              @if (faltaSupervisor()) {
+                <div class="text-danger small">Primero debe existir un supervisor registrado.</div>
+              }
+            </div>
+          }
+
+          @if (rolSeleccionado() === 'recursos_humanos') {
+            <div class="mb-3">
+              <label class="form-label" [class.campo-obligatorio]="esObligatorio(usuarioForm.controls.departamento)" for="usuario-departamento">Departamento</label>
+              <input type="text" id="usuario-departamento" class="form-control" formControlName="departamento"
+           [class.is-invalid]="usuarioForm.controls.departamento.invalid && usuarioForm.controls.departamento.touched" />
+              <div class="form-text">Departamento de Recursos Humanos al que pertenece</div>
+              @if (usuarioForm.controls.departamento.invalid && usuarioForm.controls.departamento.touched) {
+                <div class="text-danger small">El departamento es obligatorio.</div>
+              }
+            </div>
+          }
+
+          @if (rolSeleccionado() === 'capacitador' || rolSeleccionado() === 'tecnico_soporte') {
+            <div class="mb-3">
+              <label class="form-label" [class.campo-obligatorio]="esObligatorio(usuarioForm.controls.especialidad_tecnica)" for="usuario-especialidad">Especialidad técnica</label>
+              <input type="text" id="usuario-especialidad" class="form-control" formControlName="especialidad_tecnica"
+           [class.is-invalid]="usuarioForm.controls.especialidad_tecnica.invalid && usuarioForm.controls.especialidad_tecnica.touched" />
+              <div class="form-text">Área técnica en la que se especializa</div>
+              @if (usuarioForm.controls.especialidad_tecnica.invalid && usuarioForm.controls.especialidad_tecnica.touched) {
+                <div class="text-danger small">La especialidad técnica es obligatoria.</div>
+              }
+            </div>
+          }
+
+          @if (rolSeleccionado() === 'capacitador') {
+            <div class="mb-3">
+              <label class="form-label" for="usuario-experiencia">Años de experiencia</label>
+              <input type="number" id="usuario-experiencia" class="form-control" formControlName="experiencia" min="0"
+           [class.is-invalid]="usuarioForm.controls.experiencia.invalid && usuarioForm.controls.experiencia.touched" />
+            </div>
+          }
+
+          @if (modoEdicion()) {
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="usuarioActivo" formControlName="is_active" />
+              <label class="form-check-label" for="usuarioActivo">Usuario activo</label>
+            </div>
+          }
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_usuarioForm.submitted && usuarioForm.invalid && usuarioForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar a {{ usuarioAEliminar()?.nombre }}? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

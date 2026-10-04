@@ -1,0 +1,59 @@
+.carpetas-anio {
+  margin-bottom: .75rem;
+}
+
+.carpetas-mes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  margin: .25rem 0 .25rem 1rem;
+}
+
+.carpetas-mes-nombre {
+  min-width: 6.5rem;
+  text-transform: capitalize;
+  color: var(--app-texto-suave);
+  font-size: .85rem;
+}
+
+.carpeta {
+  max-width: 100%;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .65rem;
+  background: var(--app-superficie);
+  color: var(--app-titulo);
+  border: 1.5px solid var(--app-borde-control);
+  border-radius: 999px;
+  font-size: .85rem;
+  cursor: pointer;
+}
+
+.carpeta:hover {
+  background: var(--app-superficie-2);
+}
+
+.carpeta.activa {
+  background: var(--app-destacada);
+  color: #fff;
+  border-color: var(--app-destacada);
+}
+
+.carpeta:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}
+
+.barra-seleccion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .75rem;
+  padding: .6rem 1rem;
+  background: var(--app-acento-suave);
+  color: var(--app-titulo);
+  border-bottom: 1px solid var(--app-borde);
+}

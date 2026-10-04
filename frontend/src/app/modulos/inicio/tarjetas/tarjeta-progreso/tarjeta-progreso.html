@@ -1,0 +1,21 @@
+<section class="tarjeta" [attr.aria-label]="tarjeta().titulo">
+  <h2 class="tarjeta-titulo">{{ tarjeta().titulo }}</h2>
+
+  <div class="encabezado">
+    <div class="texto">
+      <div class="curso">{{ tarjeta().item.titulo }}</div>
+      <div class="detalle">{{ tarjeta().item.subtitulo }}</div>
+    </div>
+    <app-estado-badge [valor]="tarjeta().item.estado" />
+  </div>
+
+  <div class="barra" role="progressbar" [attr.aria-label]="'Avance en ' + tarjeta().item.titulo"
+       aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="porcentaje()">
+    <div class="barra-relleno" [style.width.%]="porcentaje()"></div>
+  </div>
+  <div class="porcentaje">{{ porcentaje() }}% completado</div>
+
+  @if (tarjeta().ruta_ver_todo; as ruta) {
+    <div class="tarjeta-pie"><a [routerLink]="ruta">Ver todo</a></div>
+  }
+</section>

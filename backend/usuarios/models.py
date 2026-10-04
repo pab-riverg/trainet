@@ -49,6 +49,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, db_column='email')
     fecha_registro = models.DateField(auto_now_add=True, db_column='fecha_registro')
     telefono = models.CharField(max_length=255, blank=True, db_column='telefono')
+    # Opcional y única; varios usuarios sin cédula (NULL) están permitidos.
+    cedula = models.CharField(max_length=10, null=True, blank=True, unique=True, db_column='cedula')
     is_active = models.BooleanField(default=True, db_column='is_active')
     is_staff = models.BooleanField(default=False, db_column='is_staff')
     rol = models.CharField(max_length=50, choices=ROL_CHOICES, db_column='rol')

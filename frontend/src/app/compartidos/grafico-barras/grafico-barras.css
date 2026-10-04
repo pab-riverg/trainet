@@ -1,0 +1,80 @@
+.grafico {
+  margin: 0;
+}
+
+.grafico-titulo {
+  font-weight: 600;
+  color: var(--app-titulo);
+  margin-bottom: .5rem;
+}
+
+.grafico-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 .5rem;
+  font-size: .85rem;
+}
+
+.grafico-muestra {
+  display: inline-block;
+  width: .8rem;
+  height: .8rem;
+  border-radius: 3px;
+  margin-right: .35rem;
+  vertical-align: -1px;
+}
+
+.grafico-fila {
+  display: grid;
+  grid-template-columns: minmax(90px, 30%) 1fr;
+  gap: .75rem;
+  align-items: center;
+  margin-bottom: .4rem;
+}
+
+.grafico-etiqueta {
+  font-size: .85rem;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grafico-pista {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 1.1rem;
+}
+
+.grafico-barra {
+  height: .9rem;
+  border-radius: 3px;
+  flex: 0 0 auto;
+  max-width: calc(100% - 3.5rem);
+}
+
+.grafico-valor {
+  font-size: .8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* < 576px (convención de breakpoints en styles.css): la etiqueta va completa encima de su barra (en táctil no hay `title`). */
+@media (max-width: 575.98px) {
+  .grafico-fila {
+    grid-template-columns: minmax(0, 1fr);
+    gap: .15rem;
+  }
+
+  .grafico-etiqueta {
+    text-align: left;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

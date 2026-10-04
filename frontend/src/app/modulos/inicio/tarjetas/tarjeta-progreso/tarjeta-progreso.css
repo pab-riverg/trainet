@@ -1,0 +1,35 @@
+.encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: .75rem;
+}
+
+.curso {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.detalle {
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}
+
+.barra {
+  height: 12px;
+  background: var(--app-borde);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra-relleno {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.porcentaje {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--app-titulo);
+}

@@ -1,0 +1,30 @@
+.inicio-encabezado {
+  margin-bottom: 1rem;
+}
+
+.inicio-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: .25rem 0 0;
+  text-transform: capitalize;
+}
+
+/* Cuadrícula "bento": las tarjetas se acomodan solas según el ancho disponible. */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+
+/* La primera tarjeta (acceso a Triny) ocupa dos columnas cuando hay espacio. */
+.bento-destacada {
+  grid-column: span 2;
+}
+
+@media (max-width: 680px) {
+  .bento-destacada {
+    grid-column: span 1;
+  }
+}

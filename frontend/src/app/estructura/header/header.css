@@ -1,0 +1,154 @@
+.notif-wrapper {
+  position: relative;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  max-width: calc(100vw - 2rem);
+  max-height: 70vh;
+  max-height: 70dvh;
+  overflow-y: auto;
+  background: var(--app-superficie);
+  color: var(--app-titulo);
+  border: 1px solid var(--app-borde);
+  border-radius: 12px;
+  box-shadow: var(--app-sombra-flotante);
+  z-index: 1050;
+}
+
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--app-borde);
+}
+
+.notif-marcar-todas {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--app-acento);
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notif-marcar-todas:disabled {
+  color: var(--app-texto-tenue);
+  cursor: default;
+}
+
+.notif-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notif-item {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+  width: 100%;
+  padding: .7rem 1rem .7rem 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--app-borde);
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  position: relative;
+}
+
+.notif-item:hover {
+  background: var(--app-superficie-2);
+}
+
+.notif-no-leida {
+  background: var(--app-acento-suave);
+  font-weight: 700;
+}
+
+.notif-no-leida::before {
+  content: '';
+  position: absolute;
+  left: .5rem;
+  top: 1.05rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.notif-mensaje {
+  font-size: .85rem;
+  overflow-wrap: anywhere;
+}
+
+.notif-fecha {
+  font-size: .72rem;
+  font-weight: 400;
+  color: var(--app-texto-suave);
+}
+
+.notif-estado {
+  margin: 0;
+  padding: 1rem;
+  text-align: center;
+  font-size: .85rem;
+  color: var(--app-texto-suave);
+  list-style: none;
+}
+
+.notif-estado.text-danger {
+  color: var(--app-error-lista);
+}
+
+/* < 576px: el panel ocupa el ancho de la pantalla menos 1rem de margen por lado y no depende de la posición de la campana. */
+@media (max-width: 575.98px) {
+  .notif-panel {
+    position: fixed;
+    top: calc(var(--topbar-h) + 8px);
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: none;
+  }
+}
+
+/* Notificación con destino: cursor de enlace y chevron sutil a la derecha. */
+.notif-con-destino {
+  cursor: pointer;
+  position: relative;
+  padding-right: 2rem;
+}
+
+.notif-destino {
+  position: absolute;
+  right: .8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}

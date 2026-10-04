@@ -1,0 +1,224 @@
+/* Login: dos mitades. Todo el color sale de los tokens --login-* definidos en styles.css (:root). */
+.login-logo {
+  height: 42px;
+  width: auto;
+}
+
+.login-pagina {
+  --login-fondo: var(--login-fondo-noche);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 60px);
+  min-height: calc(100dvh - 60px);
+}
+
+.login-pagina.login-claro {
+  --login-fondo: var(--login-fondo-claro);
+}
+
+/* Mitad izquierda: imagen a toda la mitad con degradado y eslogan en el tercio inferior. */
+.login-imagen {
+  position: relative;
+  overflow: hidden;
+}
+
+.login-imagen img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-degradado {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--login-degradado-ini), var(--login-degradado-fin));
+}
+
+.login-eslogan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 33%;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0 3rem;
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--login-eslogan);
+}
+
+/* Mitad derecha: fondo (noche o claro) con la tarjeta centrada. */
+.login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: var(--login-fondo);
+}
+
+.login-panel .auth-card {
+  background: var(--login-tarjeta);
+}
+
+.login-campo {
+  margin-bottom: .35rem;
+}
+
+.login-error-campo {
+  margin-bottom: .6rem;
+}
+
+.login-error-envio {
+  margin: 0 0 .75rem;
+  font-weight: 600;
+}
+
+.login-panel .btn-primary-trainet {
+  margin-top: .25rem;
+}
+
+.login-panel .btn-primary-trainet:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+/* Interruptor claro / noche de la barra superior. */
+.login-tema {
+  background: none;
+  border: none;
+  padding: .35rem;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: color .2s, background .2s;
+}
+
+.login-tema:hover {
+  color: var(--navy);
+  background: var(--gray-100);
+}
+
+button.btn-ingresa {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.login-enlace {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Burbuja de ayuda. */
+.help-bubble {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--login-ayuda-fondo);
+  color: var(--login-ayuda-icono);
+  font-size: 1.1rem;
+  box-shadow: 0 4px 16px var(--login-degradado-ini);
+  cursor: pointer;
+  z-index: 200;
+  transition: transform .2s;
+}
+
+.help-bubble:hover {
+  transform: scale(1.1);
+}
+
+/* Diálogo de ayuda. */
+.login-modal-fondo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--login-modal-velo);
+  z-index: 1000;
+}
+
+.login-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.75rem 1.75rem 1.5rem;
+  border-radius: 16px;
+  background: var(--login-tarjeta);
+  color: var(--navy);
+}
+
+.login-modal h2 {
+  margin: 0 0 .75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.login-modal p {
+  margin: 0 0 1.25rem;
+}
+
+.login-modal a {
+  color: var(--accent);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.login-modal-cerrar {
+  width: auto;
+  margin-left: auto;
+}
+
+/* ── Responsive (breakpoints de Bootstrap; convención en styles.css). ≥ 768px: sin cambios. ── */
+
+/* < 768px: sin columna de imagen (display:none; la imagen es lazy y no se descarga) y el panel ocupa todo el ancho.
+   El padding inferior deja libre el botón de ayuda, que es fijo. */
+@media (max-width: 767.98px) {
+  .login-pagina {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login-imagen {
+    display: none;
+  }
+
+  .login-panel {
+    align-items: flex-start;
+    padding: 1.5rem 1rem 5rem;
+  }
+
+  .login-panel .auth-card {
+    max-width: 440px;
+    padding: 1.75rem 1.25rem;
+  }
+}
+
+/* < 576px: la barra superior (logo, tema, "Ingresa Ahora") cabe en 320px sin solaparse. */
+@media (max-width: 575.98px) {
+  .login-logo {
+    height: 30px;
+  }
+
+  .login-tema {
+    flex: 0 0 auto;
+  }
+}

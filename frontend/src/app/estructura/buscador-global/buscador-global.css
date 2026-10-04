@@ -1,0 +1,162 @@
+/* El contenedor .topbar-search (estilos globales) es el elemento de la barra: el host no añade caja propia. */
+:host {
+  display: contents;
+}
+
+.buscador-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  max-height: 70vh;
+  max-height: 70dvh;
+  overflow-y: auto;
+  background: var(--app-superficie);
+  color: var(--app-titulo);
+  border: 1px solid var(--app-borde);
+  border-radius: 12px;
+  box-shadow: var(--app-sombra-flotante);
+  z-index: 1050;
+}
+
+.buscador-estado {
+  margin: 0;
+  padding: .9rem 1rem;
+  font-size: .85rem;
+  color: var(--app-texto-suave);
+}
+
+.buscador-grupo {
+  padding: .5rem 1rem .25rem;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--app-texto-suave);
+}
+
+.buscador-opcion {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .1rem .75rem;
+  padding: .55rem 1rem;
+  cursor: pointer;
+  border-top: 1px solid var(--app-borde-suave);
+}
+
+.buscador-opcion.activa {
+  background: var(--app-acento-suave);
+}
+
+.buscador-titulo {
+  font-size: .87rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.buscador-titulo mark {
+  background: transparent;
+  color: var(--app-acento);
+  padding: 0;
+  font-weight: 800;
+}
+
+.buscador-subtitulo {
+  grid-column: 1;
+  font-size: .75rem;
+  color: var(--app-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.buscador-estado-item {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+/* ── Responsive (breakpoints de Bootstrap; convención en styles.css) ──
+   El icono y el botón de cerrar solo existen en la versión compacta (< 768px). */
+.buscador-abrir,
+.buscador-cerrar {
+  display: none;
+}
+
+/* Los iconos de estos botones no son la lupa decorativa del campo: anulan su posicionamiento absoluto global. */
+.buscador-abrir i,
+.buscador-cerrar i {
+  position: static;
+  transform: none;
+  color: inherit;
+  font-size: 1.1rem;
+}
+
+/* < 992px: el campo es más estrecho y su panel se ancla al borde derecho para no salirse por la derecha. */
+@media (max-width: 991.98px) {
+  .topbar-search {
+    max-width: 160px;
+  }
+
+  .buscador-panel {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* < 768px: el campo se pliega a un icono; al pulsarlo se despliega sobre toda la barra (sin mover campana ni usuario). */
+@media (max-width: 767.98px) {
+  .topbar-search {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+  }
+
+  .topbar-search .buscador-abrir {
+    display: flex;
+  }
+
+  .topbar-search .buscador-lupa,
+  .topbar-search input {
+    display: none;
+  }
+
+  .topbar-search.expandido {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 0 .75rem 0 1rem;
+    background: var(--app-superficie);
+  }
+
+  .topbar-search.expandido .buscador-abrir {
+    display: none;
+  }
+
+  .topbar-search.expandido .buscador-cerrar {
+    display: flex;
+    flex: 0 0 auto;
+  }
+
+  .topbar-search.expandido input {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* La lupa decorativa queda dentro del campo (1rem de padding de la barra + .75rem de sangría). */
+  .topbar-search.expandido .buscador-lupa {
+    display: block;
+    left: 1.75rem;
+  }
+
+  /* Resultados: ancho de pantalla menos 1rem de margen por lado. */
+  .buscador-panel {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    max-width: none;
+  }
+}

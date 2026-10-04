@@ -1,0 +1,35 @@
+@if (visible()) {
+  <div class="paginador">
+    <span class="paginador-texto" role="status">
+      Mostrando {{ formatearNumero(rango().desde) }}–{{ formatearNumero(rango().hasta) }} de {{ formatearNumero(total()) }}
+    </span>
+
+    <nav aria-label="Paginación">
+      <ul class="paginador-lista">
+        <li>
+          <button type="button" class="paginador-boton" [disabled]="pagina() <= 1" (click)="ir(pagina() - 1)">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior
+          </button>
+        </li>
+        @for (elemento of elementos(); track $index) {
+          <li>
+            @if (elemento === '…') {
+              <span class="paginador-elipsis" aria-hidden="true">…</span>
+            } @else {
+              <button type="button" class="paginador-boton paginador-numero"
+                      [class.activa]="elemento === pagina()"
+                      [attr.aria-current]="elemento === pagina() ? 'page' : null"
+                      [attr.aria-label]="'Ir a la página ' + elemento"
+                      (click)="ir(elemento)">{{ elemento }}</button>
+            }
+          </li>
+        }
+        <li>
+          <button type="button" class="paginador-boton" [disabled]="pagina() >= paginas()" (click)="ir(pagina() + 1)">
+            Siguiente <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+}

@@ -1,0 +1,33 @@
+<span class="raiz" #raiz>
+  <button type="button"
+          #boton
+          class="menu-boton"
+          [class.btn-primary-trainet]="variante() === 'primario'"
+          [class.btn-corporate]="variante() === 'secundario'"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="abierto()"
+          [attr.aria-label]="etiquetaAccesible()"
+          [disabled]="inactivo()"
+          (click)="alternar()"
+          (keydown)="alTeclearEnBoton($event)">
+    <i class="bi bi-download" aria-hidden="true"></i>
+    {{ cargando() ? 'Descargando…' : etiqueta() }}
+    <i class="bi bi-chevron-down menu-flecha" aria-hidden="true"></i>
+  </button>
+
+  @if (abierto()) {
+    <div class="menu-lista"
+         role="menu"
+         [style.top.px]="posicion().top"
+         [style.bottom.px]="posicion().bottom"
+         [style.left.px]="posicion().left"
+         [style.min-width.px]="posicion().minAncho"
+         (keydown)="alTeclearEnMenu($event)">
+      @for (opcion of opciones(); track opcion.etiqueta) {
+        <button type="button" #item role="menuitem" class="menu-item" (click)="elegir(opcion)">
+          {{ opcion.etiqueta }}
+        </button>
+      }
+    </div>
+  }
+</span>

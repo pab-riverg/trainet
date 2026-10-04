@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'asistente',
     'reportes',
     'notificaciones',
+    'inicio',
+    'dashboard',
+    'busqueda',
 ]
 
 MIDDLEWARE = [
@@ -130,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -161,7 +164,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # Límites por usuario de los endpoints con `throttle_scope` (único lugar donde se configuran).
+    'DEFAULT_THROTTLE_RATES': {
+        'busqueda': '30/minute',
+    },
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@trainet.com'
+
+# Todas las pruebas escriben sus archivos en una carpeta temporal, nunca en MEDIA_ROOT.
+TEST_RUNNER = 'trainet_backend.test_runner.RunnerConMediaTemporal'

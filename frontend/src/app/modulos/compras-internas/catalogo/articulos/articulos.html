@@ -1,0 +1,214 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Artículos del catálogo</h6>
+    <button type="button" class="btn-primary-trainet" (click)="abrirCrear()">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo artículo
+    </button>
+  </div>
+
+  <!-- Formulario de alta / edición -->
+  @if (formularioAbierto()) {
+    <form class="p-3 border-bottom" [formGroup]="articuloForm" (ngSubmit)="guardar()" #f_articuloForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+      <h6>{{ articuloEnEdicion() ? 'Editar artículo' : 'Nuevo artículo' }}</h6>
+
+      <div class="d-flex flex-wrap gap-3 mb-3">
+        <div>
+          <label class="form-label campo-obligatorio" for="art-nombre">Nombre</label>
+          <input type="text" id="art-nombre" class="form-control" formControlName="nombre" maxlength="255"
+           [class.is-invalid]="articuloForm.controls.nombre.invalid && articuloForm.controls.nombre.touched" />
+          @if (articuloForm.controls.nombre.invalid && articuloForm.controls.nombre.touched) {
+            <div class="text-danger small">El nombre es obligatorio.</div>
+          }
+        </div>
+        <div>
+          <label class="form-label campo-obligatorio" for="art-categoria">Categoría</label>
+          <select id="art-categoria" class="form-select" formControlName="fo_categoria"
+           [class.is-invalid]="articuloForm.controls.fo_categoria.invalid && articuloForm.controls.fo_categoria.touched">
+            <option [ngValue]="null" disabled>Selecciona una categoría</option>
+            @for (categoria of categorias(); track categoria.id) {
+              <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+            }
+          </select>
+      @if (articuloForm.controls.fo_categoria.invalid && articuloForm.controls.fo_categoria.touched) {
+        <div class="mensaje-error">{{ mensajeControl(articuloForm.controls.fo_categoria) }}</div>
+      }
+        </div>
+        <div>
+          <label class="form-label campo-obligatorio" for="art-precio">Precio de referencia ($)</label>
+          <input type="text" appMoneda id="art-precio" class="form-control" formControlName="precio_referencia"
+           [class.is-invalid]="articuloForm.controls.precio_referencia.invalid && articuloForm.controls.precio_referencia.touched" />
+          @if (articuloForm.controls.precio_referencia.invalid && articuloForm.controls.precio_referencia.touched) {
+            <div class="text-danger small">Ingresa un valor entero de 0 o más.</div>
+          }
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="art-descripcion">Descripción (opcional)</label>
+        <input type="text" id="art-descripcion" class="form-control" formControlName="descripcion" maxlength="255"
+           [class.is-invalid]="articuloForm.controls.descripcion.invalid && articuloForm.controls.descripcion.touched" />
+      </div>
+
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="art-disponible" formControlName="disponible" />
+        <label class="form-check-label" for="art-disponible">Disponible para solicitar</label>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label" for="art-imagen">Imagen (opcional, JPG, PNG o WEBP, máx. 2 MB)</label>
+        <input type="file"
+               id="art-imagen"
+               #imagenInput
+               class="form-control"
+               style="max-width: 420px;"
+               accept=".jpg,.jpeg,.png,.webp"
+               (change)="onImagenSeleccionada($event)" />
+        @if (errorImagen()) {
+          <div class="text-danger small">{{ errorImagen() }}</div>
+        }
+        @if (imagenMostrada(); as imagen) {
+          <div class="mt-2">
+            <img class="articulo-vista-previa" [src]="imagen" alt="Vista previa de la imagen del artículo" />
+            <div class="text-muted small">{{ vistaPrevia() ? 'Imagen nueva (se guardará al confirmar).' : 'Imagen actual.' }}</div>
+          </div>
+        }
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : 'Guardar' }}
+        </button>
+          @if (f_articuloForm.submitted && articuloForm.invalid && articuloForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        <button type="button" class="btn-corporate" style="width:auto;" (click)="cerrarFormulario()">Cancelar</button>
+      </div>
+
+      @if (errorFormulario()) {
+        <p class="text-danger small mt-2">{{ errorFormulario() }}</p>
+      }
+    </form>
+  }
+
+  <!-- Filtros -->
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="art-buscar">Buscar</label>
+      <input type="search" id="art-buscar" class="form-control" formControlName="search" placeholder="Nombre o descripción…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="art-filtro-categoria">Categoría</label>
+      <select id="art-filtro-categoria" class="form-select" formControlName="categoria"
+           [class.is-invalid]="filtrosForm.controls.categoria.invalid && filtrosForm.controls.categoria.touched">
+        <option [ngValue]="null">Todas</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="art-filtro-disponible">Disponibilidad</label>
+      <select id="art-filtro-disponible" class="form-select" formControlName="disponible"
+           [class.is-invalid]="filtrosForm.controls.disponible.invalid && filtrosForm.controls.disponible.touched">
+        <option [ngValue]="null">Todos</option>
+        <option [ngValue]="true">Disponibles</option>
+        <option [ngValue]="false">No disponibles</option>
+      </select>
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorCategorias()) {
+    <p class="text-danger small px-3">{{ errorCategorias() }}</p>
+  }
+  @if (errorCambio()) {
+    <p class="text-danger small px-3">{{ errorCambio() }}</p>
+  }
+  @if (errorEliminar()) {
+    <p class="text-danger small px-3">{{ errorEliminar() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando artículos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader"></th>
+            <th role="columnheader">Artículo</th>
+            <th role="columnheader">Categoría</th>
+            <th role="columnheader">Precio</th>
+            <th role="columnheader">Disponible</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (articulo of paginacion.visibles(); track articulo.id) {
+            <tr role="row">
+              <td class="celda-miniatura" role="cell">
+                @if (articulo.imagen) {
+                  <img class="articulo-miniatura" [src]="articulo.imagen" [alt]="articulo.nombre" />
+                } @else {
+                  <span class="articulo-miniatura articulo-miniatura-icono" aria-hidden="true">
+                    <i class="bi {{ articulo.categoria_icono || 'bi-box-seam' }}"></i>
+                  </span>
+                }
+              </td>
+              <td class="celda-principal" role="cell">
+                {{ articulo.nombre }}
+                @if (!articulo.disponible) {
+                  <app-estado-badge class="ms-1" dominio="catalogo" valor="No disponible" />
+                }
+              </td>
+              <td data-label="Categoría" role="cell">{{ articulo.categoria_nombre }}</td>
+              <td data-label="Precio" role="cell">{{ formatearPrecio(articulo.precio_referencia) }}</td>
+              <td data-label="Disponible" role="cell">
+                <div class="form-check form-switch">
+                  <input class="form-check-input"
+                         type="checkbox"
+                         role="switch"
+                         [id]="'disp-' + articulo.id"
+                         [checked]="articulo.disponible"
+                         [disabled]="cambiandoId() === articulo.id"
+                         (change)="cambiarDisponible(articulo, $event)" />
+                  <label class="form-check-label" [for]="'disp-' + articulo.id">{{ articulo.disponible ? 'Sí' : 'No' }}</label>
+                </div>
+              </td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar" etiqueta="Editar artículo" titulo="Editar" (click)="abrirEditar(articulo)" />
+                @if (articuloPorEliminar() === articulo.id) {
+                  <span class="small ms-2">¿Eliminar?</span>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                          [disabled]="eliminandoId() === articulo.id"
+                          (click)="confirmarEliminar(articulo)">Sí</button>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarEliminar()">No</button>
+                } @else {
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar artículo"
+                      titulo="Eliminar"
+                      (click)="pedirEliminar(articulo)" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="6" class="text-center text-muted py-4">No hay artículos que coincidan.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

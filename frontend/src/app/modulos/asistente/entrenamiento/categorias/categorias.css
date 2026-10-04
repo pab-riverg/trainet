@@ -1,0 +1,40 @@
+.categoria-iconos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.categoria-icono {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .15rem;
+  width: 84px;
+  padding: .5rem .25rem;
+  border: 1.5px solid var(--app-borde-control);
+  border-radius: 10px;
+  background: var(--app-superficie);
+  color: var(--app-titulo);
+  font-size: .68rem;
+  cursor: pointer;
+}
+
+.categoria-icono i {
+  font-size: 1.4rem;
+}
+
+.categoria-icono:hover {
+  background: var(--app-superficie-2);
+}
+
+.categoria-icono.activo {
+  background: var(--app-destacada);
+  color: #fff;
+  border-color: var(--app-destacada);
+}
+
+.categoria-icono:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}
+

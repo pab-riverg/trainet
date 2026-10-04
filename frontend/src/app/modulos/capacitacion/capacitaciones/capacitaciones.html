@@ -1,0 +1,209 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Capacitaciones</h6>
+
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCapacitacion"
+              (click)="abrirCrear()">
+        <i class="bi bi-plus-lg"></i> Nueva capacitación
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando capacitaciones…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Curso</th>
+          <th role="columnheader">Instructor</th>
+          <th role="columnheader">Fecha inicio</th>
+          <th role="columnheader">Fecha fin</th>
+          <th role="columnheader">Modalidad</th>
+          @if (puedeGestionar()) {
+            <th role="columnheader">Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (capacitacion of paginacion.visibles(); track capacitacion.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ capacitacion.curso_titulo || '—' }}</td>
+            <td data-label="Instructor" role="cell">{{ capacitacion.instructor_nombre || '—' }}</td>
+            <td data-label="Fecha inicio" role="cell">{{ capacitacion.fecha_inicio }}</td>
+            <td data-label="Fecha fin" role="cell">{{ capacitacion.fecha_fin }}</td>
+            <td data-label="Modalidad" role="cell">{{ etiquetaModalidad(capacitacion.modalidad) }}</td>
+            @if (puedeGestionar()) {
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar capacitación"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCapacitacion"
+                    (click)="abrirEditar(capacitacion)" />
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar capacitación"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarCapacitacion"
+                    (click)="abrirEliminar(capacitacion)" />
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" [attr.colspan]="puedeGestionar() ? 6 : 5" class="text-center text-muted py-4">
+              No hay capacitaciones programadas.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Modal Crear/Editar Capacitación -->
+<div class="modal fade" id="modalCapacitacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="capacitacionForm" (ngSubmit)="guardar()" #f_capacitacionForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modoEdicion() ? 'Editar capacitación' : 'Nueva capacitación' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          @if (errorFormulario()) {
+            <p class="text-danger small">{{ errorFormulario() }}</p>
+          }
+
+          @if (errorCatalogos()) {
+            <p class="text-danger small">{{ errorCatalogos() }}</p>
+          }
+
+          @if (!hayDatosDisponibles()) {
+            <p class="text-danger small">
+              Primero deben existir cursos y capacitadores registrados para poder programar una capacitación.
+            </p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="capacitacion-curso">Curso</label>
+            <select id="capacitacion-curso" class="form-select" formControlName="fo_curso"
+           [class.is-invalid]="capacitacionForm.controls.fo_curso.invalid && capacitacionForm.controls.fo_curso.touched">
+              <option [ngValue]="null" disabled>Selecciona un curso</option>
+              @for (curso of cursos(); track curso.id) {
+                <option [ngValue]="curso.id">{{ curso.titulo }}</option>
+              }
+            </select>
+      @if (capacitacionForm.controls.fo_curso.invalid && capacitacionForm.controls.fo_curso.touched) {
+        <div class="mensaje-error">{{ mensajeControl(capacitacionForm.controls.fo_curso) }}</div>
+      }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="capacitacion-instructor">Instructor</label>
+            <select id="capacitacion-instructor" class="form-select" formControlName="fo_instructor"
+           [class.is-invalid]="capacitacionForm.controls.fo_instructor.invalid && capacitacionForm.controls.fo_instructor.touched">
+              <option [ngValue]="null" disabled>Selecciona un instructor</option>
+              @for (capacitador of capacitadores(); track capacitador.id) {
+                <option [ngValue]="capacitador.id">{{ capacitador.fo_usuario_nombre }}</option>
+              }
+            </select>
+      @if (capacitacionForm.controls.fo_instructor.invalid && capacitacionForm.controls.fo_instructor.touched) {
+        <div class="mensaje-error">{{ mensajeControl(capacitacionForm.controls.fo_instructor) }}</div>
+      }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="capacitacion-fecha-inicio">Fecha de inicio</label>
+            <input type="date" id="capacitacion-fecha-inicio" class="form-control" formControlName="fecha_inicio"
+           [class.is-invalid]="capacitacionForm.controls.fecha_inicio.invalid && capacitacionForm.controls.fecha_inicio.touched" />
+      @if (capacitacionForm.controls.fecha_inicio.invalid && capacitacionForm.controls.fecha_inicio.touched) {
+        <div class="mensaje-error">{{ mensajeControl(capacitacionForm.controls.fecha_inicio) }}</div>
+      }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="capacitacion-fecha-fin">Fecha de fin</label>
+            <input type="date" id="capacitacion-fecha-fin" class="form-control" formControlName="fecha_fin"
+           [class.is-invalid]="capacitacionForm.controls.fecha_fin.invalid && capacitacionForm.controls.fecha_fin.touched" />
+      @if (capacitacionForm.controls.fecha_fin.invalid && capacitacionForm.controls.fecha_fin.touched) {
+        <div class="mensaje-error">{{ mensajeControl(capacitacionForm.controls.fecha_fin) }}</div>
+      }
+            @if (capacitacionForm.errors?.['fechaFinAnterior'] && capacitacionForm.controls.fecha_fin.touched) {
+              <div class="text-danger small">La fecha de fin no puede ser anterior a la fecha de inicio.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="capacitacion-modalidad">Modalidad</label>
+            <select id="capacitacion-modalidad" class="form-select" formControlName="modalidad"
+           [class.is-invalid]="capacitacionForm.controls.modalidad.invalid && capacitacionForm.controls.modalidad.touched">
+              <option value="" disabled>Selecciona una modalidad</option>
+              @for (opcion of modalidades; track opcion.codigo) {
+                <option [value]="opcion.codigo">{{ opcion.etiqueta }}</option>
+              }
+            </select>
+      @if (capacitacionForm.controls.modalidad.invalid && capacitacionForm.controls.modalidad.touched) {
+        <div class="mensaje-error">{{ mensajeControl(capacitacionForm.controls.modalidad) }}</div>
+      }
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_capacitacionForm.submitted && capacitacionForm.invalid && capacitacionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarCapacitacion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar capacitación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar la capacitación de "{{ capacitacionAEliminar()?.curso_titulo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

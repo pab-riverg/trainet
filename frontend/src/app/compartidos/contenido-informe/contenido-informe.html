@@ -1,0 +1,56 @@
+@if (contenido().indicadores.length > 0) {
+  <div class="indicadores mb-3">
+    @for (indicador of contenido().indicadores; track indicador.etiqueta) {
+      <div class="indicador">
+        <div class="indicador-valor">{{ formatearNumero(indicador.valor) }}</div>
+        <div class="indicador-etiqueta">{{ indicador.etiqueta }}</div>
+      </div>
+    }
+  </div>
+}
+
+@for (seccion of contenido().secciones; track seccion.titulo) {
+  <!-- Hasta 3 columnas: en móvil cada fila es una tarjeta (la primera columna es el título). Con más columnas son tablas
+       de datos numéricos anchas: se quedan como tabla, con scroll horizontal dentro de su contenedor. -->
+  @let tarjetas = seccion.columnas.length <= 3;
+  <div class="users-table-card mb-3">
+    <div class="users-table-header">
+      <h6>{{ seccion.titulo }}</h6>
+    </div>
+    <div class="table-responsive">
+      <table class="users-table" [class.tabla-tarjetas]="tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            @for (columna of seccion.columnas; track $index) {
+              <th role="columnheader">{{ columna }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (fila of seccion.filas; track $index) {
+            <tr role="row">
+              @for (celda of fila; track $index) {
+                <td role="cell"
+                    [class.celda-principal]="tarjetas && $first"
+                    [attr.data-label]="tarjetas && !$first ? seccion.columnas[$index] : null">{{ formatearNumero(celda) }}</td>
+              }
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="seccion.columnas.length" class="text-center text-muted py-3">Sin datos.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (seccion.nota) {
+      <p class="small text-muted px-3 py-2 mb-0">{{ seccion.nota }}</p>
+    }
+  </div>
+}
+
+@for (grafico of contenido().graficos; track grafico.titulo) {
+  <div class="users-table-card p-3 mb-3">
+    <app-grafico-barras [grafico]="grafico" />
+  </div>
+}

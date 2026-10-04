@@ -1,0 +1,117 @@
+<div class="d-flex flex-wrap gap-3 mb-3">
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalPendientes() }}</div>
+    <div class="text-muted small">Pendientes</div>
+  </div>
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalAprobados() }}</div>
+    <div class="text-muted small">Aprobados</div>
+  </div>
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalEntregados() }}</div>
+    <div class="text-muted small">Entregados</div>
+  </div>
+</div>
+
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Gestión de pedidos</h6>
+  </div>
+
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="gp-buscar">Buscar</label>
+      <input type="search" id="gp-buscar" class="form-control" formControlName="search" placeholder="Solicitante, recurso o justificación…" />
+    </div>
+    <div>
+      <label class="form-label" for="gp-estado">Estado</label>
+      <select id="gp-estado" class="form-select" formControlName="estado">
+        <option [ngValue]="null">Todos</option>
+        @for (estado of estados; track estado.codigo) {
+          <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="gp-prioridad">Prioridad</label>
+      <select id="gp-prioridad" class="form-select" formControlName="prioridad">
+        <option [ngValue]="null">Todas</option>
+        @for (prioridad of prioridades; track prioridad.codigo) {
+          <option [ngValue]="prioridad.codigo">{{ prioridad.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="gp-tipo">Recurso</label>
+      <select id="gp-tipo" class="form-select" formControlName="tipo">
+        <option [ngValue]="null">Todos</option>
+        @for (tipo of tipos(); track tipo.id) {
+          <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+        }
+      </select>
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorTipos()) {
+    <p class="text-danger small px-3">{{ errorTipos() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando pedidos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">#</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Solicitante</th>
+          <th role="columnheader">Recurso</th>
+          <th role="columnheader">Cantidad</th>
+          <th role="columnheader">Prioridad</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (pedido of paginacion.visibles(); track pedido.id) {
+          <tr role="row">
+            <td class="celda-principal celda-pedido" role="cell">{{ pedido.id }}</td>
+            <td data-label="Fecha" role="cell">{{ pedido.fecha_solicitud }}</td>
+            <td data-label="Solicitante" role="cell">{{ pedido.usuario_nombre || '—' }}</td>
+            <td data-label="Recurso" role="cell">{{ pedido.tipo_nombre || '—' }}</td>
+            <td data-label="Cantidad" role="cell">{{ pedido.cantidad }}</td>
+            <td data-label="Prioridad" role="cell"><app-estado-badge dominio="prioridad" [valor]="pedido.prioridad" [etiqueta]="etiquetaPrioridad(pedido.prioridad)" /></td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="recurso" [valor]="pedido.estado" [etiqueta]="etiquetaEstado(pedido.estado)" /></td>
+            <td class="celda-acciones" role="cell">
+              <button type="button"
+                      class="btn-corporate"
+                      style="width:auto;"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalDetallePedido"
+                      (click)="gestionar(pedido)"
+                      aria-label="Gestionar pedido">
+                Gestionar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="8" class="text-center text-muted py-4">No hay pedidos que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-pedido [pedido]="pedidoSeleccionado()" [modoGestion]="true" (actualizado)="recargar()" />

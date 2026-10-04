@@ -1,1 +1,175 @@
-<p>perfil works!</p>
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando perfil…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3">{{ error() }}</p>
+}
+
+@if (!cargando() && !error() && usuario(); as datos) {
+
+  <div class="perfil">
+
+    <div class="perfil-rejilla">
+
+      <aside class="card-widget perfil-identidad-tarjeta" aria-label="Identidad">
+        <div class="perfil-identidad">
+          <span class="perfil-avatar" aria-hidden="true">{{ iniciales() }}</span>
+          <h1 class="perfil-nombre">{{ datos.nombre }}</h1>
+          <span class="perfil-email">{{ datos.email }}</span>
+          <app-estado-badge variante="info" [valor]="etiquetaRolUsuario()" />
+        </div>
+
+        <hr class="perfil-divisor" />
+
+        <section aria-labelledby="perfil-datos">
+          <h2 class="section-heading" id="perfil-datos">Mis datos</h2>
+          <dl class="perfil-filas">
+            @if (datos.cedula) {
+              <div class="perfil-fila">
+                <dt>Cédula</dt>
+                <dd>{{ datos.cedula | cedula }}</dd>
+              </div>
+            }
+            <div class="perfil-fila">
+              <dt>Fecha de registro</dt>
+              <dd>{{ formatearFecha(datos.fecha_registro) }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        @if (supervisor(); as jefe) {
+          <hr class="perfil-divisor" />
+
+          <section aria-labelledby="perfil-supervisor">
+            <h2 class="section-heading" id="perfil-supervisor">Mi supervisor</h2>
+            <dl class="perfil-filas">
+              <div class="perfil-fila">
+                <dt>Nombre</dt>
+                <dd>{{ jefe.nombre }}</dd>
+              </div>
+              <div class="perfil-fila">
+                <dt>Correo</dt>
+                <dd><a class="perfil-correo" [href]="'mailto:' + jefe.email">{{ jefe.email }}</a></dd>
+              </div>
+            </dl>
+            <a class="perfil-escribir" [href]="'mailto:' + jefe.email">
+              <i class="bi bi-envelope" aria-hidden="true"></i> Escribirle
+            </a>
+          </section>
+        }
+      </aside>
+
+      <div class="perfil-columna">
+
+      <section class="card-widget" aria-labelledby="perfil-telefono-titulo">
+        <h2 class="section-heading" id="perfil-telefono-titulo">Teléfono de contacto</h2>
+
+        <form [formGroup]="telefonoForm" (ngSubmit)="guardarTelefono()" #f_telefonoForm="ngForm">
+          <div class="mb-2">
+            <label class="form-label campo-obligatorio" for="perfil-telefono">Teléfono</label>
+            <app-campo-telefono idCampo="perfil-telefono" formControlName="telefono"
+                                [invalido]="telefonoForm.controls.telefono.invalid && telefonoForm.controls.telefono.touched" />
+            @if (telefonoForm.controls.telefono.invalid && telefonoForm.controls.telefono.touched) {
+              <div class="mensaje-error">{{ mensajeControl(telefonoForm.controls.telefono) }}</div>
+            } @else if (errorTelefonoCampo()) {
+              <div class="mensaje-error">{{ errorTelefonoCampo() }}</div>
+            }
+          </div>
+
+          @if (errorTelefono()) {
+            <p class="text-danger small">{{ errorTelefono() }}</p>
+          }
+          @if (exitoTelefono()) {
+            <p class="text-success small">Teléfono actualizado correctamente.</p>
+          }
+
+          <button type="submit" class="btn-primary-trainet perfil-boton" [disabled]="guardandoTelefono()">
+            {{ guardandoTelefono() ? 'Guardando…' : 'Guardar teléfono' }}
+          </button>
+          @if (f_telefonoForm.submitted && telefonoForm.invalid && telefonoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </form>
+      </section>
+
+      <section class="card-widget" aria-labelledby="perfil-password-titulo">
+        <h2 class="section-heading" id="perfil-password-titulo">Cambiar contraseña</h2>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()" #f_passwordForm="ngForm">
+          <div class="mb-2">
+            <label class="form-label" for="perfil-pw-actual">Contraseña actual</label>
+            <div class="perfil-password">
+              <input [type]="verPassword().actual ? 'text' : 'password'" id="perfil-pw-actual" class="form-control"
+                     formControlName="passwordActual"
+                     [class.is-invalid]="passwordForm.controls.passwordActual.invalid && passwordForm.controls.passwordActual.touched" />
+              <button type="button" class="perfil-ojo" (click)="alternarPassword('actual')"
+                      [attr.aria-label]="verPassword().actual ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'"
+                      [attr.aria-pressed]="verPassword().actual">
+                <i class="bi" [class.bi-eye]="!verPassword().actual" [class.bi-eye-slash]="verPassword().actual" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (passwordForm.controls.passwordActual.invalid && passwordForm.controls.passwordActual.touched) {
+              <div class="mensaje-error">{{ mensajeControl(passwordForm.controls.passwordActual) }}</div>
+            }
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label" for="perfil-pw-nueva">Contraseña nueva</label>
+            <div class="perfil-password">
+              <input [type]="verPassword().nueva ? 'text' : 'password'" id="perfil-pw-nueva" class="form-control"
+                     formControlName="passwordNueva"
+                     [class.is-invalid]="passwordForm.controls.passwordNueva.invalid && passwordForm.controls.passwordNueva.touched" />
+              <button type="button" class="perfil-ojo" (click)="alternarPassword('nueva')"
+                      [attr.aria-label]="verPassword().nueva ? 'Ocultar contraseña nueva' : 'Mostrar contraseña nueva'"
+                      [attr.aria-pressed]="verPassword().nueva">
+                <i class="bi" [class.bi-eye]="!verPassword().nueva" [class.bi-eye-slash]="verPassword().nueva" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (passwordForm.controls.passwordNueva.invalid && passwordForm.controls.passwordNueva.touched) {
+              <div class="mensaje-error">{{ mensajeControl(passwordForm.controls.passwordNueva) }}</div>
+            }
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label" for="perfil-pw-confirmar">Confirmar contraseña nueva</label>
+            <div class="perfil-password">
+              <input [type]="verPassword().confirmar ? 'text' : 'password'" id="perfil-pw-confirmar" class="form-control"
+                     formControlName="passwordConfirmar"
+                     [class.is-invalid]="passwordForm.controls.passwordConfirmar.invalid && passwordForm.controls.passwordConfirmar.touched" />
+              <button type="button" class="perfil-ojo" (click)="alternarPassword('confirmar')"
+                      [attr.aria-label]="verPassword().confirmar ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'"
+                      [attr.aria-pressed]="verPassword().confirmar">
+                <i class="bi" [class.bi-eye]="!verPassword().confirmar" [class.bi-eye-slash]="verPassword().confirmar" aria-hidden="true"></i>
+              </button>
+            </div>
+            @if (passwordForm.controls.passwordConfirmar.invalid && passwordForm.controls.passwordConfirmar.touched) {
+              <div class="mensaje-error">{{ mensajeControl(passwordForm.controls.passwordConfirmar) }}</div>
+            }
+          </div>
+
+          @if (passwordForm.errors?.['passwordsNoCoinciden'] && passwordForm.get('passwordConfirmar')?.touched) {
+            <p class="text-danger small">Las contraseñas no coinciden.</p>
+          }
+
+          @if (errorPassword()) {
+            <p class="text-danger small">{{ errorPassword() }}</p>
+          }
+          @if (exitoPassword()) {
+            <p class="text-success small">Contraseña actualizada correctamente.</p>
+          }
+
+          <button type="submit" class="btn-primary-trainet perfil-boton" [disabled]="guardandoPassword()">
+            {{ guardandoPassword() ? 'Guardando…' : 'Cambiar contraseña' }}
+          </button>
+          @if (f_passwordForm.submitted && passwordForm.invalid && passwordForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </form>
+      </section>
+
+      </div>
+    </div>
+  </div>
+
+}

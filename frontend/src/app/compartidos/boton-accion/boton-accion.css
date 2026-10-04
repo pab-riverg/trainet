@@ -1,0 +1,42 @@
+/* Estilo único de los iconos de acción. Colores y tamaños salen de las variables de styles.css (:root). */
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.accion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--accion-tamano);
+  min-height: var(--accion-tamano);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--accion-radio);
+  color: var(--accion-color);
+  font-size: var(--accion-icono);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color .15s, background-color .15s;
+}
+
+.accion:hover:not(:disabled) {
+  color: var(--accion-hover-color);
+  background: var(--accion-hover-bg);
+}
+
+.accion.peligro:hover:not(:disabled) {
+  color: var(--accion-peligro-color);
+  background: var(--accion-peligro-bg);
+}
+
+.accion:focus-visible {
+  outline: 2px solid var(--accion-foco);
+  outline-offset: 1px;
+}
+
+.accion:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}

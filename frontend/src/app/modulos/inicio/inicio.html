@@ -1,1 +1,40 @@
-<p>inicio works!</p>
+<!-- El saludo ya está en la barra superior; aquí se muestra el resumen del rol y la fecha. -->
+<div class="inicio-encabezado">
+  <h1 class="section-heading mb-0">Tu resumen</h1>
+  @if (inicio.usuario(); as usuario) {
+    <p class="inicio-subtitulo">
+      <app-estado-badge variante="info" [valor]="usuario.rol_nombre" />
+      <span class="text-muted">{{ hoy }}</span>
+    </p>
+  }
+</div>
+
+@if (inicio.error() && inicio.tarjetas().length === 0) {
+  <div class="text-center py-4" role="alert">
+    <p class="text-danger">{{ inicio.error() }}</p>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="reintentar()">Reintentar</button>
+  </div>
+} @else if (inicio.cargando() && inicio.tarjetas().length === 0) {
+  <p class="text-center text-muted py-4" role="status">Cargando tu resumen…</p>
+} @else {
+  <div class="bento">
+    @for (tarjeta of inicio.tarjetas(); track tarjeta.clave; let primera = $first) {
+      <div class="bento-celda" [class.bento-destacada]="primera">
+        @switch (tarjeta.tipo) {
+          @case ('acceso_triny') {
+            <app-tarjeta-triny />
+          }
+          @case ('metricas') {
+            <app-tarjeta-metricas [tarjeta]="tarjeta" />
+          }
+          @case ('lista') {
+            <app-tarjeta-lista [tarjeta]="tarjeta" />
+          }
+          @case ('progreso') {
+            <app-tarjeta-progreso [tarjeta]="tarjeta" />
+          }
+        }
+      </div>
+    }
+  </div>
+}

@@ -1,0 +1,25 @@
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: .75rem;
+}
+
+.indicador {
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-left: 4px solid var(--app-titulo);
+  border-radius: 8px;
+  padding: .75rem 1rem;
+}
+
+.indicador-valor {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+  overflow-wrap: anywhere;
+}
+
+.indicador-etiqueta {
+  font-size: .8rem;
+  color: var(--app-texto-suave);
+}

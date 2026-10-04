@@ -1,0 +1,31 @@
+.articulo-miniatura {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--app-superficie-2);
+}
+
+.articulo-miniatura-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-destacada);
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.articulo-vista-previa {
+  max-width: 160px;
+  max-height: 160px;
+  border-radius: 10px;
+  border: 1px solid var(--app-borde);
+  object-fit: cover;
+}
+
+/* < 768px (convención de breakpoints en styles.css): la miniatura abre la tarjeta del artículo, ocupando su propia fila. */
+@media (max-width: 767.98px) {
+  .celda-miniatura {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,0 +1,236 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Directorio de proveedores</h6>
+
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalProveedor"
+              (click)="abrirCrear()">
+        <i class="bi bi-plus-lg"></i> Nuevo proveedor
+      </button>
+    }
+  </div>
+
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="prov-buscar">Buscar</label>
+      <input type="search" id="prov-buscar" class="form-control" formControlName="search" placeholder="Nombre, NIT o contacto…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="prov-filtro-especialidad">Especialidad</label>
+      <input type="search" id="prov-filtro-especialidad" class="form-control" formControlName="especialidad" placeholder="Ej.: liderazgo"
+           [class.is-invalid]="filtrosForm.controls.especialidad.invalid && filtrosForm.controls.especialidad.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="prov-filtro-estado">Estado</label>
+      <select id="prov-filtro-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="filtrosForm.controls.estado.invalid && filtrosForm.controls.estado.touched">
+        <option [ngValue]="null">Todos</option>
+        @for (estado of estados; track estado.codigo) {
+          <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando proveedores…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Proveedor</th>
+          <th role="columnheader">NIT</th>
+          <th role="columnheader">Especialidad</th>
+          <th role="columnheader">Contacto</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (proveedor of paginacion.visibles(); track proveedor.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ proveedor.razon_social }}</td>
+            <td data-label="NIT" role="cell">{{ proveedor.rut | nit }}</td>
+            <td data-label="Especialidad" role="cell">{{ proveedor.especialidad }}</td>
+            <td data-label="Contacto" role="cell">{{ proveedor.contacto }}<br /><span class="text-muted small">{{ proveedor.email }}</span></td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="proveedor" [valor]="proveedor.estado" [etiqueta]="etiquetaEstado(proveedor.estado)" /></td>
+            <td class="celda-acciones" role="cell">
+              <app-boton-accion accion="ver"
+                  etiqueta="Ver perfil del proveedor"
+                  titulo="Ver perfil"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalDetalleProveedor"
+                  (click)="verProveedor(proveedor)" />
+              @if (puedeGestionar()) {
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar proveedor"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalProveedor"
+                    (click)="abrirEditar(proveedor)" />
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar proveedor"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarProveedor"
+                    (click)="abrirEliminar(proveedor)" />
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="6" class="text-center text-muted py-4">No hay proveedores que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-proveedor [proveedor]="proveedorSeleccionado()" (cambio)="recargar()" />
+
+<!-- Modal Crear/Editar proveedor -->
+<div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="proveedorForm" (ngSubmit)="guardar()" #f_proveedorForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ proveedorEnEdicion() ? 'Editar proveedor' : 'Nuevo proveedor' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          @if (errorFormulario()) {
+            <p class="text-danger small">{{ errorFormulario() }}</p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-razon">Nombre o razón social</label>
+            <input type="text" id="prov-razon" class="form-control" formControlName="razon_social" maxlength="255"
+           [class.is-invalid]="proveedorForm.controls.razon_social.invalid && proveedorForm.controls.razon_social.touched" />
+            @if (proveedorForm.controls.razon_social.invalid && proveedorForm.controls.razon_social.touched) {
+              <div class="text-danger small">El nombre es obligatorio.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-rut">NIT</label>
+            <input type="text" id="prov-rut" class="form-control" formControlName="rut" appSoloDigitos="10"
+                   aria-describedby="ayuda-nit"
+                   [class.is-invalid]="(proveedorForm.controls.rut.invalid && proveedorForm.controls.rut.touched) || erroresApi()['rut']" />
+
+            @if (proveedorForm.controls.rut.invalid && proveedorForm.controls.rut.touched) {
+              <div class="mensaje-error">{{ mensajeControl(proveedorForm.controls.rut) }}</div>
+            } @else if (erroresApi()['rut']) {
+              <div class="mensaje-error">{{ erroresApi()['rut'] }}</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-especialidad">Especialidad / servicios</label>
+            <input type="text" id="prov-especialidad" class="form-control" formControlName="especialidad" maxlength="255"
+           [class.is-invalid]="proveedorForm.controls.especialidad.invalid && proveedorForm.controls.especialidad.touched" />
+            @if (proveedorForm.controls.especialidad.invalid && proveedorForm.controls.especialidad.touched) {
+              <div class="text-danger small">La especialidad es obligatoria.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-contacto">Persona de contacto</label>
+            <input type="text" id="prov-contacto" class="form-control" formControlName="contacto" maxlength="255"
+           [class.is-invalid]="proveedorForm.controls.contacto.invalid && proveedorForm.controls.contacto.touched" />
+            @if (proveedorForm.controls.contacto.invalid && proveedorForm.controls.contacto.touched) {
+              <div class="text-danger small">El contacto es obligatorio.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-email">Correo electrónico</label>
+            <input type="email" id="prov-email" class="form-control" formControlName="email" maxlength="255"
+           [class.is-invalid]="proveedorForm.controls.email.invalid && proveedorForm.controls.email.touched" />
+            @if (proveedorForm.controls.email.invalid && proveedorForm.controls.email.touched) {
+              <div class="text-danger small">Ingresa un correo válido.</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="prov-telefono">Teléfono</label>
+            <app-campo-telefono idCampo="prov-telefono" formControlName="telefono"
+                                [invalido]="(proveedorForm.controls.telefono.invalid && proveedorForm.controls.telefono.touched) || !!erroresApi()['telefono']" />
+            @if (proveedorForm.controls.telefono.invalid && proveedorForm.controls.telefono.touched) {
+              <div class="mensaje-error">{{ mensajeControl(proveedorForm.controls.telefono) }}</div>
+            } @else if (erroresApi()['telefono']) {
+              <div class="mensaje-error">{{ erroresApi()['telefono'] }}</div>
+            }
+          </div>
+
+          @if (proveedorEnEdicion()) {
+            <div class="mb-3">
+              <label class="form-label" for="prov-estado">Estado</label>
+              <select id="prov-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="proveedorForm.controls.estado.invalid && proveedorForm.controls.estado.touched">
+                @for (estado of estados; track estado.codigo) {
+                  <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+                }
+              </select>
+            </div>
+          }
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_proveedorForm.submitted && proveedorForm.invalid && proveedorForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar a "{{ proveedorAEliminar()?.razon_social }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

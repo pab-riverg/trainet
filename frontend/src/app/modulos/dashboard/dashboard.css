@@ -1,0 +1,23 @@
+.dashboard-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.enlace-reportes {
+  width: auto;
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* < 576px (convención de breakpoints en styles.css): el enlace del encabezado a todo el ancho. */
+@media (max-width: 575.98px) {
+  .enlace-reportes {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}

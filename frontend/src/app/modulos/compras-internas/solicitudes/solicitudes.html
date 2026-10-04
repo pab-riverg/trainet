@@ -1,0 +1,143 @@
+@if (esTodas()) {
+  <div class="presupuesto-panel" role="region" aria-label="Presupuesto disponible">
+    <div>
+      <div class="small text-muted">Presupuesto disponible para compras</div>
+      @if (modulo(); as m) {
+        <div class="presupuesto-valor">{{ formatearPrecio(m.presupuesto_disponible) }}</div>
+      } @else if (!errorPresupuesto()) {
+        <div class="text-muted">Consultando…</div>
+      }
+    </div>
+
+    @if (puedeEditarPresupuesto && modulo()) {
+      @if (editandoPresupuesto()) {
+        <form class="d-flex flex-wrap gap-2 align-items-end" [formGroup]="presupuestoForm" (ngSubmit)="guardarPresupuesto()" #f_presupuestoForm="ngForm">
+          <div>
+            <label class="form-label small mb-1 campo-obligatorio" for="presupuesto-valor">Nuevo presupuesto ($)</label>
+            <input type="text" appMoneda id="presupuesto-valor" class="form-control" formControlName="valor"
+                 [class.is-invalid]="presupuestoControl.invalid && presupuestoControl.touched" />
+            @if (presupuestoControl.invalid && presupuestoControl.touched) {
+              <div class="mensaje-error">{{ mensajeControl(presupuestoControl) }}</div>
+            }
+          </div>
+          <button type="submit" class="btn-primary-trainet" style="width:auto;"
+                  [disabled]="guardandoPresupuesto()">
+            {{ guardandoPresupuesto() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_presupuestoForm.submitted && presupuestoForm.invalid && presupuestoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+          <button type="button" class="btn-corporate" style="width:auto;" (click)="cancelarEdicionPresupuesto()">Cancelar</button>
+        </form>
+      } @else {
+        <button type="button" class="btn-corporate" style="width:auto;" (click)="editarPresupuesto()">
+          <i class="bi bi-pencil" aria-hidden="true"></i> Editar presupuesto
+        </button>
+      }
+    }
+  </div>
+  @if (exitoPresupuesto()) {
+    <p class="text-success small" role="status">{{ exitoPresupuesto() }}</p>
+  }
+  @if (errorPresupuesto()) {
+    <p class="text-danger small">{{ errorPresupuesto() }}</p>
+  }
+}
+
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>{{ esTodas() ? 'Solicitudes de compra' : 'Mis solicitudes' }}</h6>
+  </div>
+
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    @if (esTodas()) {
+      <div>
+        <label class="form-label" for="sol-buscar">Buscar</label>
+        <input type="search" id="sol-buscar" class="form-control" formControlName="search" placeholder="Solicitante, área o artículo…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+      </div>
+    }
+    <div>
+      <label class="form-label" for="sol-estado">Estado</label>
+      <select id="sol-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="filtrosForm.controls.estado.invalid && filtrosForm.controls.estado.touched">
+        <option [ngValue]="null">Todos</option>
+        @for (estado of estados; track estado.codigo) {
+          <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando solicitudes…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">#</th>
+            <th role="columnheader">Fecha</th>
+            @if (esTodas()) {
+              <th role="columnheader">Solicitante</th>
+            }
+            <th role="columnheader">Área</th>
+            <th role="columnheader">Artículos</th>
+            <th role="columnheader">Total estimado</th>
+            <th role="columnheader">Estado</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (solicitud of paginacion.visibles(); track solicitud.id) {
+            <tr role="row">
+              <td class="celda-principal celda-solicitud" role="cell">{{ solicitud.id }}</td>
+              <td data-label="Fecha" role="cell">{{ solicitud.fecha_solicitud }}</td>
+              @if (esTodas()) {
+                <td data-label="Solicitante" role="cell">{{ solicitud.solicitante_nombre || '—' }}</td>
+              }
+              <td data-label="Área" role="cell">{{ solicitud.area }}</td>
+              <td data-label="Artículos" role="cell">{{ solicitud.items.length }}</td>
+              <td data-label="Total estimado" role="cell">{{ formatearPrecio(solicitud.total_estimado) }}</td>
+              <td data-label="Estado" role="cell">
+                <app-estado-badge dominio="compra" [valor]="solicitud.estado" [etiqueta]="etiquetaEstado(solicitud.estado)" />
+                @if (!esTodas() && solicitud.estado === 'entregada') {
+                  <span class="marca-accion"><i class="bi bi-bell-fill" aria-hidden="true"></i> Confirma tu recepción</span>
+                }
+                @if (!esTodas() && solicitud.estado === 'en_revision') {
+                  <span class="marca-accion marca-revision"><i class="bi bi-hourglass-split" aria-hidden="true"></i> En revisión</span>
+                }
+              </td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="ver"
+                    etiqueta="Ver detalle de la solicitud"
+                    titulo="Ver"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalDetalleSolicitud"
+                    (click)="ver(solicitud)" />
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="esTodas() ? 8 : 7" class="text-center text-muted py-4">
+                {{ esTodas() ? 'No hay solicitudes que coincidan.' : 'Aún no has hecho solicitudes de compra.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-solicitud [solicitud]="solicitudSeleccionada()" (cambio)="recargar()" />

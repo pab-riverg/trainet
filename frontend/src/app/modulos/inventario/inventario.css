@@ -1,0 +1,28 @@
+.inventario-vistas {
+  display: flex;
+  gap: .5rem;
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+
+.inventario-grupo {
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: .5rem;
+  padding: 1rem;
+}
+
+.inventario-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .5rem 0;
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.inventario-item:first-child {
+  border-top: 0;
+}

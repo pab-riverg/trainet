@@ -1,0 +1,45 @@
+<h1 class="section-heading">Gestión documental</h1>
+
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando módulo de gestión documental…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3">{{ error() }}</p>
+}
+
+@if (!cargando() && !error() && moduloId(); as id) {
+
+  <div class="documentos-tabs" role="tablist" aria-label="Secciones de gestión documental">
+    @for (pestana of pestanas(); track pestana.id) {
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="pestanaActiva() === pestana.id"
+              [attr.aria-selected]="pestanaActiva() === pestana.id"
+              [id]="'tab-' + pestana.id"
+              [attr.aria-controls]="'panel-' + pestana.id"
+              (click)="cambiarPestana(pestana.id)">
+        {{ pestana.etiqueta }}
+      </button>
+    }
+  </div>
+
+  <div class="documentos-tabpanel"
+       role="tabpanel"
+       [id]="'panel-' + pestanaActiva()"
+       [attr.aria-labelledby]="'tab-' + pestanaActiva()">
+    @switch (pestanaActiva()) {
+      @case ('biblioteca') {
+        <app-biblioteca [moduloId]="id" />
+      }
+      @case ('institucionales') {
+        <app-institucionales />
+      }
+      @case ('historial') {
+        <app-historial-documentos />
+      }
+    }
+  </div>
+
+}

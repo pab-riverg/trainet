@@ -1,0 +1,20 @@
+@if (enlace(); as href) {
+  <a class="accion"
+     [class.peligro]="peligro()"
+     [href]="href"
+     target="_blank"
+     rel="noopener noreferrer"
+     [attr.aria-label]="etiqueta()"
+     [attr.title]="ayuda()">
+    <i class="bi {{ icono() }}" aria-hidden="true"></i>
+  </a>
+} @else {
+  <button type="button"
+          class="accion"
+          [class.peligro]="peligro()"
+          [disabled]="deshabilitado()"
+          [attr.aria-label]="etiqueta()"
+          [attr.title]="ayuda()">
+    <i class="bi {{ icono() }}" aria-hidden="true"></i>
+  </button>
+}

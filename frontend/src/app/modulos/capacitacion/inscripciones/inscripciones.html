@@ -1,0 +1,147 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Inscripción y asistencia</h6>
+  </div>
+
+  <div class="p-3">
+    <label class="form-label" for="inscripciones-capacitacion">Capacitación</label>
+    <select id="inscripciones-capacitacion"
+            class="form-select"
+            [formControl]="capacitacionSeleccionada"
+            style="max-width: 420px;">
+      <option [ngValue]="null">Selecciona una capacitación</option>
+      @for (capacitacion of capacitaciones(); track capacitacion.id) {
+        <option [ngValue]="capacitacion.id">{{ capacitacion.curso_titulo }} — {{ capacitacion.fecha_inicio }}</option>
+      }
+    </select>
+
+    @if (errorCapacitaciones()) {
+      <p class="text-danger small mt-2">{{ errorCapacitaciones() }}</p>
+    }
+  </div>
+
+  @if (capacitacionSeleccionada.value === null) {
+    <p class="text-center text-muted py-4">Selecciona una capacitación.</p>
+  } @else {
+
+    @if (cargandoParticipantes()) {
+      <p class="text-center text-muted py-4">Cargando participantes…</p>
+    }
+
+    @if (errorParticipantes()) {
+      <p class="text-center text-danger py-3">{{ errorParticipantes() }}</p>
+    }
+
+    @if (errorAsistencia()) {
+      <p class="text-center text-danger py-3">{{ errorAsistencia() }}</p>
+    }
+
+    @if (!cargandoParticipantes() && !errorParticipantes()) {
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Empleado</th>
+            <th role="columnheader">Asistió</th>
+            @if (puedeGestionar()) {
+              <th role="columnheader">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (participante of paginacion.visibles(); track participante.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ participante.empleado_nombre }}</td>
+              <td data-label="Asistió" role="cell">
+                <input type="checkbox"
+                       #asistioCheckbox
+                       [checked]="participante.asistio"
+                       [disabled]="!puedeGestionar() || idsActualizandoAsistencia().includes(participante.id)"
+                       (change)="alternarAsistencia(participante, asistioCheckbox.checked)"
+                       [attr.aria-label]="'Marcar asistencia de ' + participante.empleado_nombre" />
+              </td>
+              @if (puedeGestionar()) {
+                <td class="celda-acciones" role="cell">
+                  <app-boton-accion accion="quitar"
+                      etiqueta="Quitar a este participante de la capacitación"
+                      titulo="Quitar"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEliminarParticipante"
+                      (click)="abrirEliminar(participante)" />
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" [attr.colspan]="puedeGestionar() ? 3 : 2" class="text-center text-muted py-4">
+                Aún no hay empleados inscritos.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+    }
+
+    @if (puedeGestionar()) {
+      <div class="p-3 border-top">
+        <label class="form-label" for="inscripciones-empleado">Inscribir empleado</label>
+        <div class="d-flex gap-2 align-items-start flex-wrap">
+          <select id="inscripciones-empleado"
+                  class="form-select"
+                  [formControl]="empleadoSeleccionado"
+                  style="max-width: 320px;">
+            <option [ngValue]="null" disabled>Selecciona un empleado</option>
+            @for (empleado of empleadosDisponibles(); track empleado.id) {
+              <option [ngValue]="empleado.id">{{ empleado.fo_usuario_nombre }}</option>
+            }
+          </select>
+          <button type="button"
+                  class="btn-primary-trainet"
+                  style="width:auto;"
+                  [disabled]="empleadoSeleccionado.value === null || inscribiendo()"
+                  (click)="inscribir()">
+            {{ inscribiendo() ? 'Inscribiendo…' : 'Inscribir' }}
+          </button>
+        </div>
+        <div class="form-text">El empleado recibirá una notificación.</div>
+
+        @if (errorEmpleados()) {
+          <p class="text-danger small mt-2">{{ errorEmpleados() }}</p>
+        }
+        @if (errorInscripcion()) {
+          <p class="text-danger small mt-2">{{ errorInscripcion() }}</p>
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+<!-- Modal confirmación de quitar participante -->
+<div class="modal fade" id="modalEliminarParticipante" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Quitar participante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Quitar a "{{ participanteAEliminar()?.empleado_nombre }}" de esta capacitación?</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Quitando…' : 'Quitar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

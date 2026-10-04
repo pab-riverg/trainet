@@ -1,0 +1,45 @@
+<h1 class="section-heading">Pedidos de recursos</h1>
+
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando módulo de pedidos de recursos…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3">{{ error() }}</p>
+}
+
+@if (!cargando() && !error() && moduloId(); as id) {
+
+  <div class="recursos-tabs" role="tablist" aria-label="Secciones de pedidos de recursos">
+    @for (pestana of pestanas(); track pestana.id) {
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="pestanaActiva() === pestana.id"
+              [attr.aria-selected]="pestanaActiva() === pestana.id"
+              [id]="'tab-' + pestana.id"
+              [attr.aria-controls]="'panel-' + pestana.id"
+              (click)="cambiarPestana(pestana.id)">
+        {{ pestana.etiqueta }}
+      </button>
+    }
+  </div>
+
+  <div class="recursos-tabpanel"
+       role="tabpanel"
+       [id]="'panel-' + pestanaActiva()"
+       [attr.aria-labelledby]="'tab-' + pestanaActiva()">
+    @switch (pestanaActiva()) {
+      @case ('mis-pedidos') {
+        <app-mis-pedidos [moduloId]="id" />
+      }
+      @case ('gestion') {
+        <app-gestion-pedidos />
+      }
+      @case ('catalogo') {
+        <app-catalogo-recursos />
+      }
+    }
+  </div>
+
+}

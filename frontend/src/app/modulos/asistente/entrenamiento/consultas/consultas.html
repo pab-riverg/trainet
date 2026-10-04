@@ -1,0 +1,233 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Preguntas frecuentes</h6>
+    <button type="button" class="btn-primary-trainet"
+            data-bs-toggle="modal" [attr.data-bs-target]="'#' + idModal" (click)="abrirNueva()">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva pregunta
+    </button>
+  </div>
+
+  <p class="text-muted small px-3 pt-3 mb-0">
+    <i class="bi bi-info-circle" aria-hidden="true"></i>
+    Si una pregunta ya tiene historial, es mejor desactivarla que eliminarla: Triny deja de usarla
+    pero el historial conserva su registro.
+  </p>
+
+  <form class="d-flex flex-wrap gap-3 p-3 border-bottom filtros-listado" [formGroup]="filtrosForm">
+    <div>
+      <label class="form-label" for="cons-buscar">Buscar</label>
+      <input type="search" id="cons-buscar" class="form-control" formControlName="search" placeholder="Pregunta, respuesta o palabras clave…"
+           [class.is-invalid]="filtrosForm.controls.search.invalid && filtrosForm.controls.search.touched" />
+    </div>
+    <div>
+      <label class="form-label" for="cons-categoria">Categoría</label>
+      <select id="cons-categoria" class="form-select" formControlName="categoria"
+           [class.is-invalid]="filtrosForm.controls.categoria.invalid && filtrosForm.controls.categoria.touched">
+        <option [ngValue]="null">Todas</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="cons-activa">Estado</label>
+      <select id="cons-activa" class="form-select" formControlName="activa"
+           [class.is-invalid]="filtrosForm.controls.activa.invalid && filtrosForm.controls.activa.touched">
+        <option value="">Todas</option>
+        <option value="true">Activas</option>
+        <option value="false">Inactivas</option>
+      </select>
+    </div>
+  </form>
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3 pt-3 mb-0">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando preguntas…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Pregunta</th>
+            <th role="columnheader">Categoría</th>
+            <th role="columnheader">Archivo</th>
+            <th role="columnheader">Estado</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (consulta of paginacion.visibles(); track consulta.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ consulta.pregunta }}</td>
+              <td data-label="Categoría" role="cell">
+                @if (consulta.categoria_nombre) {
+                  <i class="bi {{ consulta.categoria_icono }} me-1" aria-hidden="true"></i>{{ consulta.categoria_nombre }}
+                } @else {
+                  <span class="text-muted">Sin categoría</span>
+                }
+              </td>
+              <td data-label="Archivo" role="cell">{{ consulta.archivo_nombre || '—' }}</td>
+              <td data-label="Estado" role="cell">
+                <app-estado-badge dominio="catalogo" [valor]="consulta.activa ? 'Activa' : 'Inactiva'" />
+              </td>
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar pregunta"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    [attr.data-bs-target]="'#' + idModal"
+                    (click)="abrirEditar(consulta)" />
+                @if (consulta.archivo) {
+                  <app-boton-accion accion="descargar"
+                      etiqueta="Descargar archivo adjunto"
+                      titulo="Descargar archivo"
+                      (click)="descargar(consulta)" />
+                }
+                @if (consultaPorEliminar() === consulta.id) {
+                  <span class="small ms-2">¿Eliminar?</span>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                          [disabled]="eliminandoId() === consulta.id"
+                          (click)="confirmarEliminar(consulta)">Sí</button>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarEliminar()">No</button>
+                } @else {
+                  <app-boton-accion accion="eliminar"
+                      etiqueta="Eliminar pregunta"
+                      titulo="Eliminar"
+                      (click)="pedirEliminar(consulta)" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="5" class="text-center text-muted py-4">No hay preguntas que coincidan con los filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<div class="modal fade" [id]="idModal" tabindex="-1" aria-labelledby="tituloModalConsulta" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="consultaForm" (ngSubmit)="guardar()" #f_consultaForm="ngForm">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalConsulta">
+            {{ consultaEnEdicion() ? 'Editar pregunta' : 'Nueva pregunta' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="cons-pregunta">Pregunta</label>
+            <input type="text" id="cons-pregunta" class="form-control" formControlName="pregunta" maxlength="255"
+           [class.is-invalid]="consultaForm.controls.pregunta.invalid && consultaForm.controls.pregunta.touched" />
+            @if (consultaForm.controls.pregunta.invalid && consultaForm.controls.pregunta.touched) {
+              <div class="text-danger small">La pregunta es obligatoria (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="cons-respuesta">Respuesta</label>
+            <textarea id="cons-respuesta" class="form-control" rows="5" formControlName="respuesta"
+           [class.is-invalid]="consultaForm.controls.respuesta.invalid && consultaForm.controls.respuesta.touched"></textarea>
+            @if (consultaForm.controls.respuesta.invalid && consultaForm.controls.respuesta.touched) {
+              <div class="text-danger small">La respuesta es obligatoria.</div>
+            }
+          </div>
+
+          <div class="d-flex flex-wrap gap-3 mb-3 filtros-listado">
+            <div>
+              <label class="form-label" for="cons-form-categoria">Categoría</label>
+              <select id="cons-form-categoria" class="form-select" formControlName="fo_categoria"
+           [class.is-invalid]="consultaForm.controls.fo_categoria.invalid && consultaForm.controls.fo_categoria.touched">
+                <option [ngValue]="null">Sin categoría</option>
+                @for (categoria of categorias(); track categoria.id) {
+                  <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+                }
+              </select>
+              @if (errorCategorias()) {
+                <div class="text-danger small">{{ errorCategorias() }}</div>
+              }
+            </div>
+            <div class="flex-grow-1">
+              <label class="form-label" for="cons-claves">Palabras clave</label>
+              <input type="text" id="cons-claves" class="form-control" formControlName="palabras_clave" maxlength="255"
+                     aria-describedby="ayuda-claves"
+           [class.is-invalid]="consultaForm.controls.palabras_clave.invalid && consultaForm.controls.palabras_clave.touched" />
+              <div id="ayuda-claves" class="form-text">
+                Separadas por espacios o comas. Ayudan a Triny a reconocer sinónimos y variantes
+                (por ejemplo: clave, password, olvidé).
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="cons-archivo">Archivo adjunto (opcional)</label>
+            @if (consultaEnEdicion()?.archivo_nombre; as actual) {
+              <p class="small mb-1">
+                Archivo actual: <strong>{{ actual }}</strong>
+                <button type="button" class="btn-corporate ms-2" style="width:auto;"
+                        (click)="descargar(consultaEnEdicion()!)">
+                  <i class="bi bi-download" aria-hidden="true"></i> Descargar
+                </button>
+                <span class="text-muted"> Si eliges uno nuevo, reemplaza al actual.</span>
+              </p>
+            }
+            <input type="file"
+                   id="cons-archivo"
+                   #archivoInput
+                   class="form-control"
+                   accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                   aria-describedby="ayuda-archivo"
+                   (change)="onArchivoSeleccionado($event)" />
+            <div id="ayuda-archivo" class="form-text">PDF, Word, Excel o imagen (PNG, JPG). Máximo 10 MB.</div>
+            @if (errorArchivo()) {
+              <p class="text-danger small mb-0">{{ errorArchivo() }}</p>
+            }
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="cons-activa-form" formControlName="activa" />
+            <label class="form-check-label" for="cons-activa-form">
+              Activa (Triny puede usarla para responder)
+            </label>
+          </div>
+
+          @if (errorFormulario()) {
+            <p class="text-danger small mt-3 mb-0">{{ errorFormulario() }}</p>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" style="width:auto;" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" style="width:auto;"
+                  [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_consultaForm.submitted && consultaForm.invalid && consultaForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

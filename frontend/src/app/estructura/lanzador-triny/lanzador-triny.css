@@ -1,0 +1,71 @@
+.lanzador-boton {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 1040;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--app-destacada);
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .3);
+  cursor: pointer;
+}
+
+.lanzador-boton:hover {
+  background: var(--navy-2);
+}
+
+.lanzador-boton:focus-visible,
+.lanzador-cerrar:focus-visible {
+  outline: 3px solid var(--app-acento);
+  outline-offset: 2px;
+}
+
+.lanzador-panel {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 5.5rem;
+  z-index: 1040;
+  width: min(380px, calc(100vw - 2rem));
+  height: min(560px, calc(100vh - 7.5rem));
+  height: min(560px, calc(100dvh - 7.5rem));
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--app-superficie);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .3);
+}
+
+.lanzador-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .6rem .9rem;
+  background: var(--app-destacada);
+  color: #fff;
+}
+
+.lanzador-cerrar {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
+.lanzador-cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* < 768px (breakpoint md; convención en styles.css): Triny va en la barra inferior, así que el botón flotante y su panel
+   no existen (display:none: ni foco ni lectores de pantalla). */
+@media (max-width: 767.98px) {
+  .lanzador-boton,
+  .lanzador-panel {
+    display: none;
+  }
+}

@@ -1,0 +1,48 @@
+/* Estilos comunes de las tarjetas de Inicio (estilo "bento": esquinas redondeadas y sombra suave). */
+:host {
+  display: block;
+  height: 100%;
+}
+
+.tarjeta {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+  padding: 1.25rem 1.4rem;
+  background: var(--app-superficie);
+  color: var(--app-texto);
+  border: 1px solid var(--app-borde);
+  border-radius: 22px;
+  box-shadow: var(--app-sombra-suave);
+}
+
+.tarjeta-titulo {
+  margin: 0;
+  font-size: .95rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.tarjeta-pie {
+  margin-top: auto;
+  padding-top: .5rem;
+  font-size: .85rem;
+}
+
+.tarjeta-pie a {
+  color: var(--app-acento);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tarjeta-pie a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}

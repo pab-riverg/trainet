@@ -1,0 +1,121 @@
+<div class="d-flex flex-wrap gap-3 mb-3">
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalAbiertos() }}</div>
+    <div class="text-muted small">Abiertos</div>
+  </div>
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalEnProceso() }}</div>
+    <div class="text-muted small">En proceso</div>
+  </div>
+  <div class="users-table-card p-3 text-center" style="min-width: 150px;">
+    <div class="h3 mb-0">{{ totalResueltos() }}</div>
+    <div class="text-muted small">Resueltos</div>
+  </div>
+</div>
+
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Gestión de tickets</h6>
+  </div>
+
+  <form class="p-3 d-flex flex-wrap gap-2 align-items-end filtros-listado" [formGroup]="filtrosForm" (submit)="$event.preventDefault()">
+    <div>
+      <label class="form-label" for="gt-buscar">Buscar</label>
+      <input type="search" id="gt-buscar" class="form-control" formControlName="search" placeholder="Usuario o descripción…" />
+    </div>
+    <div>
+      <label class="form-label" for="gt-estado">Estado</label>
+      <select id="gt-estado" class="form-select" formControlName="estado">
+        <option [ngValue]="null">Todos</option>
+        @for (estado of estados; track estado.codigo) {
+          <option [ngValue]="estado.codigo">{{ estado.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="gt-categoria">Categoría</label>
+      <select id="gt-categoria" class="form-select" formControlName="categoria">
+        <option [ngValue]="null">Todas</option>
+        @for (categoria of categorias(); track categoria.id) {
+          <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="gt-prioridad">Prioridad</label>
+      <select id="gt-prioridad" class="form-select" formControlName="prioridad">
+        <option [ngValue]="null">Todas</option>
+        @for (prioridad of prioridades; track prioridad.codigo) {
+          <option [ngValue]="prioridad.codigo">{{ prioridad.etiqueta }}</option>
+        }
+      </select>
+    </div>
+    <div>
+      <label class="form-label" for="gt-fecha">Fecha</label>
+      <input type="date" id="gt-fecha" class="form-control" formControlName="fecha" />
+    </div>
+    <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarFiltros()">Limpiar</button>
+  </form>
+
+  @if (errorCategorias()) {
+    <p class="text-danger small px-3">{{ errorCategorias() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando tickets…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">#</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Usuario</th>
+          <th role="columnheader">Categoría</th>
+          <th role="columnheader">Prioridad</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Técnico</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (ticket of paginacion.visibles(); track ticket.id) {
+          <tr role="row">
+            <td class="celda-principal celda-ticket" role="cell">{{ ticket.id }}</td>
+            <td data-label="Fecha" role="cell">{{ ticket.fecha_creacion }}</td>
+            <td data-label="Usuario" role="cell">{{ ticket.usuario_nombre || '—' }}</td>
+            <td data-label="Categoría" role="cell">{{ ticket.categoria_nombre || '—' }}</td>
+            <td data-label="Prioridad" role="cell"><app-estado-badge dominio="prioridad" [valor]="ticket.prioridad" [etiqueta]="etiquetaPrioridad(ticket.prioridad)" /></td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="ticket" [valor]="ticket.estado" [etiqueta]="etiquetaEstado(ticket.estado)" /></td>
+            <td data-label="Técnico" role="cell">{{ ticket.tecnico_nombre || 'Sin asignar' }}</td>
+            <td class="celda-acciones" role="cell">
+              <button type="button"
+                      class="btn-corporate"
+                      style="width:auto;"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalDetalleTicket"
+                      (click)="gestionar(ticket)"
+                      aria-label="Gestionar ticket">
+                Gestionar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="8" class="text-center text-muted py-4">No hay tickets que coincidan.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-ticket [ticket]="ticketSeleccionado()" [modoGestion]="true" (actualizado)="recargar()" />

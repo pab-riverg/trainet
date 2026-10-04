@@ -1,0 +1,213 @@
+.carrito-vacio {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--app-texto-suave);
+}
+
+.carrito-vacio i {
+  display: block;
+  font-size: 3rem;
+  margin-bottom: .5rem;
+}
+
+.carrito-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .carrito-layout { grid-template-columns: 1fr 340px; }
+}
+
+.carrito-lineas {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.carrito-linea {
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: .9rem;
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-radius: 14px;
+  padding: .9rem;
+}
+
+.carrito-miniatura {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--app-superficie-2);
+}
+
+.carrito-miniatura-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--app-destacada);
+  color: #fff;
+  font-size: 1.8rem;
+}
+
+.carrito-nombre {
+  font-size: .98rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--app-titulo);
+}
+
+.carrito-controles {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-top: .4rem;
+}
+
+.carrito-subtotal {
+  font-weight: 800;
+  color: var(--app-titulo);
+  white-space: nowrap;
+}
+
+.carrito-enlace {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: .5rem;
+  color: var(--app-acento);
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.carrito-enlace:focus-visible,
+.cantidad-control button:focus-visible,
+.cantidad-control input:focus-visible {
+  outline: 3px solid var(--app-foco);
+  outline-offset: 2px;
+}
+
+.cantidad-control {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--app-borde-control);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.cantidad-control button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: var(--app-superficie-2);
+  color: var(--app-titulo);
+  cursor: pointer;
+}
+
+.cantidad-control button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+.cantidad-control input {
+  width: 3rem;
+  height: 34px;
+  border: none;
+  text-align: center;
+  font-weight: 700;
+  color: var(--app-titulo);
+  background: var(--app-superficie);
+  -moz-appearance: textfield;
+}
+
+.cantidad-control input::-webkit-outer-spin-button,
+.cantidad-control input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.carrito-resumen {
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-radius: 14px;
+  padding: 1.1rem;
+}
+
+@media (min-width: 992px) {
+  .carrito-resumen { position: sticky; top: 1rem; }
+}
+
+.carrito-resumen-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--app-titulo);
+}
+
+.carrito-totales {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .25rem .75rem;
+  margin: 0 0 .5rem;
+}
+
+.carrito-totales dd {
+  margin: 0;
+  text-align: right;
+}
+
+.carrito-total-etiqueta,
+.carrito-total-valor {
+  font-weight: 800;
+  color: var(--app-titulo);
+  border-top: 1px solid var(--app-borde);
+  padding-top: .5rem;
+  margin-top: .25rem;
+}
+
+.carrito-total-valor {
+  font-size: 1.2rem;
+}
+
+/* Objetivos táctiles de 40px (< 992px; convención de breakpoints en styles.css). */
+@media (max-width: 991.98px) {
+  .cantidad-control button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cantidad-control input {
+    height: 40px;
+  }
+
+  .carrito-enlace {
+    min-height: 40px;
+  }
+}
+
+/* < 576px: imagen e info en una fila y, debajo, el subtotal a todo el ancho; así nada se sale de la tarjeta a 360px. */
+@media (max-width: 575.98px) {
+  .carrito-linea {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .carrito-linea-info {
+    min-width: 0;
+  }
+
+  .carrito-controles {
+    flex-wrap: wrap;
+  }
+
+  .carrito-subtotal {
+    grid-column: 1 / -1;
+    padding-top: .6rem;
+    border-top: 1px solid var(--app-borde-suave);
+    text-align: right;
+  }
+}

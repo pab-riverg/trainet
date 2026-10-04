@@ -1,0 +1,186 @@
+<div class="home">
+
+  <header class="home-barra">
+    <div class="home-contenedor home-barra-fila">
+      <a routerLink="/" class="home-marca">
+        <img src="/img/trainet_logo_blue.png" alt="TRAINET" width="1920" height="450" class="home-logo" />
+      </a>
+      <nav class="home-nav" aria-label="Principal">
+        @for (ancla of anclas; track ancla.id) {
+          <a [href]="'/#' + ancla.id">{{ ancla.texto }}</a>
+        }
+      </nav>
+      <a [routerLink]="rutaAcceso()" class="home-boton home-boton-primario">{{ textoAcceso() }}</a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- 1. Hero -->
+    <section class="home-hero" aria-labelledby="hero-titulo">
+      <div class="home-contenedor home-hero-texto">
+        <p class="home-etiqueta">Plataforma LMS para PYMEs</p>
+        <h1 id="hero-titulo">Capacita, organiza y gestiona tu empresa desde un solo lugar.</h1>
+        <p class="home-hero-subtitulo">
+          TRAINET reúne la formación del personal, la gestión documental, el soporte técnico, las compras internas y un
+          asistente virtual en una plataforma sencilla, pensada para empresas de 10 a 500 empleados.
+        </p>
+        <div class="home-botones">
+          <a [routerLink]="rutaAcceso()" class="home-boton home-boton-primario home-boton-grande">{{ textoAcceso() }}</a>
+          <a href="/#sobre-trainet"
+             class="home-boton home-boton-secundario home-boton-grande">Conoce Trainet</a>
+        </div>
+        @if (!sesion()) {
+          <p class="home-nota">¿Aún no tienes acceso? Tu administrador crea tu cuenta.</p>
+        }
+      </div>
+
+      <!-- 2. Vista del producto -->
+      <div class="home-contenedor home-producto">
+        <h2 class="visually-hidden">Vista del producto</h2>
+        <div class="home-pestanas" role="tablist" aria-label="Módulos del sistema" (keydown)="alTeclearPestana($event)">
+          @for (item of capturas; track item.id) {
+            <button #pestana type="button" role="tab" class="home-pestana" [id]="'pestana-' + item.id"
+                    aria-controls="panel-producto"
+                    [attr.aria-selected]="pestanaActiva() === item.id"
+                    [attr.tabindex]="pestanaActiva() === item.id ? 0 : -1"
+                    (click)="seleccionarPestana(item.id)">
+              <i class="bi" [class]="item.icono" aria-hidden="true"></i>
+              {{ item.etiqueta }}
+            </button>
+          }
+        </div>
+        <div id="panel-producto" class="home-panel-producto" role="tabpanel" tabindex="0"
+             [attr.aria-labelledby]="'pestana-' + captura().id">
+          <app-figura-producto [ruta]="captura().ruta" [alt]="captura().alt" [nombre]="captura().etiqueta"
+                               [icono]="captura().icono" (cargaCambio)="capturaReal.set($event)" />
+        </div>
+        @if (capturaReal()) {
+          <p class="home-producto-nota">Capturas reales del sistema.</p>
+        }
+      </div>
+    </section>
+
+    <!-- 3. Sobre Trainet -->
+    <section id="sobre-trainet" class="home-seccion" aria-labelledby="sobre-titulo" tabindex="-1">
+      <div class="home-contenedor">
+        <div class="home-encabezado">
+          <h2 id="sobre-titulo">Una sola plataforma para la operación interna de tu empresa</h2>
+          <p>
+            TRAINET nace como respuesta a la falta de soluciones accesibles que centralicen la operación interna de las
+            pequeñas y medianas empresas, sin la complejidad ni el costo de un sistema ERP empresarial. Cubre los
+            procesos de formación, documentación, soporte y gestión interna en una plataforma unificada y fácil de usar.
+          </p>
+        </div>
+        <h3 class="home-subtitulo">Tres funciones principales</h3>
+        <ul class="home-tarjetas" role="list">
+          @for (funcion of funcionesPrincipales; track funcion.titulo) {
+            <li class="home-tarjeta">
+              <span class="home-icono"><i class="bi" [class]="funcion.icono" aria-hidden="true"></i></span>
+              <h4>{{ funcion.titulo }}</h4>
+              <p>{{ funcion.descripcion }}</p>
+            </li>
+          }
+        </ul>
+        <p class="home-alcance">
+          <i class="bi bi-info-circle" aria-hidden="true"></i>
+          TRAINET se enfoca en los procesos internos no financieros: no gestiona nómina ni contabilidad.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. Funciones -->
+    <section id="funciones" class="home-seccion home-seccion-suave" aria-labelledby="funciones-titulo" tabindex="-1">
+      <div class="home-contenedor">
+        <div class="home-encabezado">
+          <h2 id="funciones-titulo">Todo lo que tu empresa necesita para operar por dentro</h2>
+          <p>Once módulos conectados entre sí, que se activan según el rol de cada persona.</p>
+        </div>
+        <ul class="home-tarjetas" role="list">
+          @for (funcion of funciones; track funcion.titulo) {
+            <li class="home-tarjeta">
+              <span class="home-icono"><i class="bi" [class]="funcion.icono" aria-hidden="true"></i></span>
+              <h3>{{ funcion.titulo }}</h3>
+              <p>{{ funcion.descripcion }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. Roles -->
+    <section id="roles" class="home-seccion" aria-labelledby="roles-titulo" tabindex="-1">
+      <div class="home-contenedor">
+        <div class="home-encabezado">
+          <h2 id="roles-titulo">Cada persona ve lo que necesita</h2>
+          <p>Once roles, cada uno con su propio menú y sus permisos.</p>
+        </div>
+        <ul class="home-roles" role="list">
+          @for (rol of roles; track rol.nombre) {
+            <li class="home-rol">
+              <h3>{{ rol.nombre }}</h3>
+              <p>{{ rol.descripcion }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- 6. Triny -->
+    <section id="triny" class="home-seccion home-triny" aria-labelledby="triny-titulo" tabindex="-1">
+      <div class="home-contenedor home-triny-fila">
+        <div class="home-triny-texto">
+          <p class="home-etiqueta home-etiqueta-clara">Asistente virtual</p>
+          <h2 id="triny-titulo">Conoce a Triny, tu asistente virtual</h2>
+          <p class="home-triny-parrafo">
+            Triny responde las dudas frecuentes de tu equipo con la información que tu empresa le enseña. Si no conoce
+            una respuesta, la registra para que un administrador la agregue a su base de conocimiento.
+          </p>
+          <ul class="home-triny-puntos" role="list">
+            @for (punto of puntosTriny; track punto.texto) {
+              <li>
+                <span class="home-icono home-icono-claro"><i class="bi" [class]="punto.icono" aria-hidden="true"></i></span>
+                <span>{{ punto.texto }}</span>
+              </li>
+            }
+          </ul>
+          <p class="home-triny-nota">IA ligera: sus respuestas dependen del entrenamiento que le da cada empresa.</p>
+        </div>
+        <div class="home-triny-figura">
+          <app-figura-producto [ruta]="capturaTriny.ruta" [alt]="capturaTriny.alt" [nombre]="capturaTriny.etiqueta"
+                               [icono]="capturaTriny.icono" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Llamado final -->
+    <section class="home-seccion home-final" aria-labelledby="final-titulo">
+      <div class="home-contenedor home-final-contenido">
+        <h2 id="final-titulo">Empieza a trabajar en TRAINET</h2>
+        <p>Ingresa con la cuenta que te creó tu administrador.</p>
+        <a [routerLink]="rutaAcceso()" class="home-boton home-boton-primario home-boton-grande">{{ textoAcceso() }}</a>
+        <p class="home-nota">
+          ¿Necesitas ayuda? Escríbenos a <a [href]="'mailto:' + correoContacto">{{ correoContacto }}</a>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 8. Pie -->
+  <footer class="home-pie">
+    <div class="home-contenedor home-pie-fila">
+      <a routerLink="/" class="home-marca">
+        <img src="/img/trainet_logo_blue.png" alt="TRAINET" width="1920" height="450" class="home-logo home-logo-pie" />
+      </a>
+      <nav class="home-nav" aria-label="Pie de página">
+        @for (ancla of anclas; track ancla.id) {
+          <a [href]="'/#' + ancla.id">{{ ancla.texto }}</a>
+        }
+        <a [routerLink]="rutaAcceso()">{{ textoAcceso() }}</a>
+      </nav>
+      <p class="home-copyright">© 2026 TRAINET. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+</div>

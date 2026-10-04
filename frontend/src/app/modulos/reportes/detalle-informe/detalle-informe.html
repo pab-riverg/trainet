@@ -1,0 +1,49 @@
+<div class="mb-3 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+  <button type="button" class="btn-corporate" style="width:auto;" (click)="cerrar.emit()">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i> Volver
+  </button>
+
+  @if (informe()) {
+    <app-menu-descarga variante="primario" etiquetaAccesible="Descargar informe"
+                       [opciones]="opcionesDescarga" [cargando]="descargando() !== null" />
+  }
+</div>
+
+@if (errorDescarga()) {
+  <p class="text-danger small" role="alert">{{ errorDescarga() }}</p>
+}
+
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando informe…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3" role="alert">{{ error() }}</p>
+}
+
+@if (informe(); as inf) {
+  <div class="users-table-card p-3 mb-3">
+    <h2 class="h4 informe-titulo">{{ inf.contenido.titulo }}</h2>
+    <p class="text-muted mb-2">{{ inf.contenido.subtitulo }}</p>
+    <p class="small mb-0">
+      <app-estado-badge class="me-2" variante="info" [valor]="inf.tipo_nombre" />
+      Generado el {{ formatearFechaHora(inf.contenido.generado_en) }}
+      @if (inf.usuario_nombre) {
+        por <strong>{{ inf.usuario_nombre }}</strong>
+      }
+    </p>
+
+    @if (inf.archivos.length > 0) {
+      <div class="mt-3">
+        <h3 class="h6">Archivos incluidos ({{ inf.archivos.length }})</h3>
+        <ul class="small mb-0">
+          @for (archivo of inf.archivos; track archivo.id) {
+            <li>{{ archivo.titulo }}</li>
+          }
+        </ul>
+      </div>
+    }
+  </div>
+
+  <app-contenido-informe [contenido]="inf.contenido" />
+}

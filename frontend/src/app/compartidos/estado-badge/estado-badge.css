@@ -1,0 +1,20 @@
+/* Píldora suave: fondo tenue y texto más oscuro del mismo tono (contraste AA). Los colores son tokens de styles.css. */
+:host {
+  display: inline-block;
+}
+
+.estado {
+  display: inline-block;
+  padding: .2rem .65rem;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.estado-exito { background: var(--estado-exito-bg); color: var(--estado-exito-fg); }
+.estado-aviso { background: var(--estado-aviso-bg); color: var(--estado-aviso-fg); }
+.estado-peligro { background: var(--estado-peligro-bg); color: var(--estado-peligro-fg); }
+.estado-info { background: var(--estado-info-bg); color: var(--estado-info-fg); }
+.estado-neutro { background: var(--estado-neutro-bg); color: var(--estado-neutro-fg); }

@@ -1,0 +1,229 @@
+<!-- Carpetas virtuales: agrupación automática por año, mes y tipo -->
+<div class="users-table-card mb-3">
+  <div class="users-table-header">
+    <h6>Carpetas ({{ totalGeneral() }} archivos activos)</h6>
+    @if (carpetaActiva()) {
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="verTodo()">
+        <i class="bi bi-x-circle" aria-hidden="true"></i> Ver todo
+      </button>
+    }
+  </div>
+
+  <div class="p-3">
+    @if (filtrosForm.controls.archivados.value) {
+      <p class="small text-muted">Las carpetas agrupan solo archivos activos; desactiva "Ver archivados" para usarlas.</p>
+    }
+    @if (errorCarpetas()) {
+      <p class="text-danger small mb-0">{{ errorCarpetas() }}</p>
+    }
+
+    @for (grupo of grupos(); track grupo.anio) {
+      <div class="carpetas-anio">
+        <h3 class="h6 mb-1"><i class="bi bi-folder2-open" aria-hidden="true"></i> {{ grupo.anio }}</h3>
+        @for (mes of grupo.meses; track mes.mes) {
+          <div class="carpetas-mes">
+            <span class="carpetas-mes-nombre">{{ mes.nombre }}</span>
+            @for (carpeta of mes.carpetas; track carpeta.tipo_id) {
+              <button type="button" class="carpeta" [class.activa]="esCarpetaActiva(carpeta)"
+                      [disabled]="filtrosForm.controls.archivados.value"
+                      [attr.aria-pressed]="esCarpetaActiva(carpeta)" (click)="elegirCarpeta(carpeta)">
+                <i class="bi bi-folder" aria-hidden="true"></i> {{ carpeta.tipo_nombre }}
+                <app-estado-badge variante="neutro" [valor]="carpeta.total.toString()" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+    } @empty {
+      @if (!errorCarpetas()) {
+        <p class="text-muted small mb-0">Aún no hay carpetas: se crean solas al importar archivos.</p>
+      }
+    }
+  </div>
+</div>
+
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Archivos importados</h6>
+    @if (puedeImportar()) {
+      <button type="button" class="btn-primary-trainet"
+              data-bs-toggle="modal" [attr.data-bs-target]="'#' + idModalArchivo" (click)="abrirImportar()">
+        <i class="bi bi-upload" aria-hidden="true"></i> Importar archivo
+      </button>
+    }
+  </div>
+
+  <form class="d-flex flex-wrap gap-3 align-items-end p-3 border-bottom filtros-listado" [formGroup]="filtrosForm">
+    <div>
+      <label class="form-label" for="arch-buscar">Buscar</label>
+      <input type="search" id="arch-buscar" class="form-control" formControlName="search" placeholder="Título…" />
+    </div>
+    <div>
+      <label class="form-label" for="arch-filtro-tipo">Tipo</label>
+      <select id="arch-filtro-tipo" class="form-select" formControlName="tipo">
+        <option [ngValue]="null">Todos</option>
+        @for (tipo of tiposArchivo(); track tipo.id) {
+          <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+        }
+      </select>
+    </div>
+    <div class="form-check form-switch mb-2">
+      <input class="form-check-input" type="checkbox" role="switch" id="arch-archivados" formControlName="archivados" />
+      <label class="form-check-label" for="arch-archivados">Ver archivados</label>
+    </div>
+  </form>
+
+  <!-- Barra de selección para el consolidado -->
+  @if (seleccion().size > 0) {
+    <div class="barra-seleccion" role="status">
+      <strong>{{ seleccion().size }} seleccionados</strong>
+      <button type="button" class="btn-primary-trainet" style="width:auto;"
+              data-bs-toggle="modal" [attr.data-bs-target]="'#' + idModalConsolidar"
+              [disabled]="mensajeSeleccion() !== null" (click)="abrirConsolidar()">
+        <i class="bi bi-collection" aria-hidden="true"></i> Generar consolidado
+      </button>
+      <button type="button" class="btn-corporate" style="width:auto;" (click)="limpiarSeleccion()">Limpiar selección</button>
+      @if (mensajeSeleccion()) {
+        <span class="small">{{ mensajeSeleccion() }}</span>
+      }
+    </div>
+  }
+
+  @if (errorAccion()) {
+    <p class="text-danger small px-3 pt-3 mb-0" role="alert">{{ errorAccion() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando archivos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader"><span class="visually-hidden">Seleccionar</span></th>
+            <th role="columnheader">Título</th>
+            <th role="columnheader">Tipo</th>
+            <th role="columnheader">Fecha del documento</th>
+            <th role="columnheader">Formato</th>
+            <th role="columnheader">Filas</th>
+            <th role="columnheader">Columnas</th>
+            <th role="columnheader">Importado por</th>
+            <th role="columnheader">Estado</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (archivo of paginacion.visibles(); track archivo.id) {
+            <tr role="row">
+              <td class="celda-seleccion" role="cell">
+                @if (archivo.activo) {
+                  <input type="checkbox" class="form-check-input" [id]="'sel-' + archivo.id"
+                         [checked]="estaSeleccionado(archivo.id)" (change)="alternarSeleccion(archivo)"
+                         [attr.aria-label]="'Seleccionar ' + archivo.titulo" />
+                }
+              </td>
+              <td class="celda-principal" role="cell">{{ archivo.titulo }}</td>
+              <td data-label="Tipo" role="cell">{{ archivo.tipo_nombre }}</td>
+              <td data-label="Fecha del documento" role="cell">{{ formatearFecha(archivo.fecha_documento) }}</td>
+              <td data-label="Formato" role="cell">
+                <app-estado-badge dominio="informe" [valor]="archivo.formato" [etiqueta]="archivo.formato === 'csv' ? 'CSV' : 'XLSX'" />
+              </td>
+              <td data-label="Filas" role="cell">{{ formatearNumero(archivo.filas) }}</td>
+              <td data-label="Columnas" role="cell">{{ archivo.columnas }}</td>
+              <td data-label="Importado por" role="cell">{{ archivo.usuario_nombre }}</td>
+              <td data-label="Estado" role="cell">
+                <app-estado-badge dominio="informe" [valor]="archivo.activo ? 'Activo' : 'Archivado'" />
+              </td>
+              <td class="celda-acciones text-nowrap" role="cell">
+                <app-boton-accion accion="ver"
+                    etiqueta="Vista previa"
+                    data-bs-toggle="modal"
+                    [attr.data-bs-target]="'#' + idModalVistaPrevia"
+                    (click)="abrirVistaPrevia(archivo)" />
+                <app-boton-accion accion="descargar"
+                    etiqueta="Descargar archivo"
+                    titulo="Descargar"
+                    (click)="descargar(archivo)" />
+
+                @if (puedeImportar()) {
+                  <app-boton-accion accion="editar"
+                      etiqueta="Editar archivo"
+                      titulo="Editar"
+                      data-bs-toggle="modal"
+                      [attr.data-bs-target]="'#' + idModalArchivo"
+                      (click)="abrirEditar(archivo)" />
+                  <app-boton-accion [accion]="archivo.activo ? 'archivar' : 'restaurar'"
+                      [etiqueta]="archivo.activo ? 'Archivar archivo' : 'Restaurar archivo'"
+                      [titulo]="archivo.activo ? 'Archivar' : 'Restaurar'"
+                      [deshabilitado]="accionEnCurso() === archivo.id"
+                      (click)="cambiarEstado(archivo)" />
+
+                  @if (!archivo.activo) {
+                    @if (archivoPorEliminar() === archivo.id) {
+                      <span class="small ms-2">¿Eliminar?</span>
+                      <button type="button" class="btn-corporate ms-1" style="width:auto;"
+                              [disabled]="accionEnCurso() === archivo.id" (click)="confirmarEliminar(archivo)">Sí</button>
+                      <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="cancelarEliminar()">No</button>
+                    } @else {
+                      <app-boton-accion accion="eliminar"
+                          etiqueta="Eliminar archivo"
+                          titulo="Eliminar"
+                          (click)="pedirEliminar(archivo)" />
+                    }
+                  }
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="10" class="text-center text-muted py-4">
+                {{ filtrosForm.controls.archivados.value ? 'No hay archivos archivados.' : 'No hay archivos que coincidan. ¡Importa el primero!' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-archivo-formulario [solicitud]="solicitudFormulario()" [tipos]="tiposArchivo()" (guardado)="alGuardar()" />
+<app-vista-previa-archivo [solicitud]="solicitudVistaPrevia()" />
+
+<!-- Modal del consolidado -->
+<div class="modal fade" [id]="idModalConsolidar" tabindex="-1" aria-labelledby="tituloConsolidar" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="consolidarForm" (ngSubmit)="consolidar()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloConsolidar">Generar consolidado</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p>Se consolidarán <strong>{{ seleccion().size }} archivos</strong>: sumas y promedios de las columnas
+            numéricas comunes, y totales por tipo.</p>
+          <label class="form-label" for="consolidado-titulo">Título del informe (opcional)</label>
+          <input type="text" id="consolidado-titulo" class="form-control" formControlName="titulo" maxlength="255" />
+          @if (errorConsolidar()) {
+            <p class="text-danger small mt-3 mb-0" role="alert">{{ errorConsolidar() }}</p>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" style="width:auto;" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="consolidando()">
+            {{ consolidando() ? 'Generando…' : 'Generar consolidado' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

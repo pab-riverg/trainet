@@ -1,0 +1,85 @@
+<div class="topbar-search" [class.expandido]="expandido()">
+  <!-- Solo en < 768px: el campo se pliega a este icono y se despliega sobre la barra sin mover nada más. -->
+  <button type="button"
+          #botonAbrir
+          class="icon-btn buscador-abrir"
+          aria-label="Abrir la búsqueda"
+          aria-controls="buscador-entrada"
+          [attr.aria-expanded]="expandido()"
+          (click)="expandir()">
+    <i class="bi bi-search" aria-hidden="true"></i>
+  </button>
+
+  <i class="bi bi-search buscador-lupa" aria-hidden="true"></i>
+  <input type="text"
+         #entrada
+         id="buscador-entrada"
+         role="combobox"
+         placeholder="Buscar…"
+         aria-label="Buscar en TRAINET"
+         aria-autocomplete="list"
+         aria-haspopup="listbox"
+         aria-controls="buscador-lista"
+         [attr.aria-expanded]="panelVisible()"
+         [attr.aria-activedescendant]="idActivo()"
+         [attr.maxlength]="maxCaracteres"
+         autocomplete="off"
+         [formControl]="texto"
+         (focus)="alEnfocar()"
+         (keydown)="alTeclear($event)" />
+
+  <button type="button" class="icon-btn buscador-cerrar" aria-label="Cerrar la búsqueda" (click)="contraer()">
+    <i class="bi bi-x-lg" aria-hidden="true"></i>
+  </button>
+
+  <!-- Anuncia el estado a lectores de pantalla (cargando, cantidad o sin resultados). -->
+  <div class="visually-hidden" role="status" aria-live="polite">{{ resumen() }}</div>
+
+  @if (panelVisible()) {
+    <div class="buscador-panel">
+      @if (estado() === 'cargando') {
+        <p class="buscador-estado">Buscando…</p>
+      } @else if (estado() === 'error') {
+        <p class="buscador-estado text-danger">{{ mensajeError() }}</p>
+      } @else if (estado() === 'listo' && vista().length === 0) {
+        <p class="buscador-estado">Sin resultados para «{{ consulta() }}»</p>
+      }
+
+      <div id="buscador-lista" role="listbox" aria-label="Resultados de la búsqueda" [hidden]="estado() !== 'listo' || vista().length === 0">
+        @for (grupo of vista(); track grupo.idTitulo) {
+          <div role="group" [attr.aria-labelledby]="grupo.idTitulo">
+            <div class="buscador-grupo" [id]="grupo.idTitulo">
+              <i class="bi {{ grupo.icono }}" aria-hidden="true"></i> {{ grupo.titulo }}
+            </div>
+            @for (item of grupo.items; track item.id) {
+              <div role="option"
+                   class="buscador-opcion"
+                   [id]="item.id"
+                   [class.activa]="item.indice === activo()"
+                   [attr.aria-selected]="item.indice === activo()"
+                   (mousedown)="$event.preventDefault()"
+                   (mouseenter)="marcar(item.indice)"
+                   (click)="abrir(item.resultado)">
+                <span class="buscador-titulo">
+                  @for (segmento of item.titulo; track $index) {
+                    @if (segmento.coincide) {
+                      <mark>{{ segmento.texto }}</mark>
+                    } @else {
+                      <span>{{ segmento.texto }}</span>
+                    }
+                  }
+                </span>
+                @if (item.resultado.subtitulo) {
+                  <span class="buscador-subtitulo">{{ item.resultado.subtitulo }}</span>
+                }
+                @if (item.resultado.estado) {
+                  <app-estado-badge class="buscador-estado-item" [valor]="item.resultado.estado" />
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

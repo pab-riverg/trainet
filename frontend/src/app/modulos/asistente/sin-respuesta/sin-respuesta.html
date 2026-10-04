@@ -1,0 +1,62 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Consultas sin respuesta</h6>
+  </div>
+
+  <p class="text-muted small px-3 pt-3 mb-0">
+    Aquí aparecen las preguntas que Triny no supo responder o que el usuario valoró como "No útil".
+    Pulsa "Entrenar" para convertir una en pregunta frecuente.
+  </p>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando consultas sin respuesta…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <div class="table-responsive">
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Texto</th>
+            <th role="columnheader">Veces</th>
+            <th role="columnheader">Última vez</th>
+            <th role="columnheader">Motivo</th>
+            <th role="columnheader">Acciones</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (grupo of paginacion.visibles(); track grupo.texto) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ grupo.texto }}</td>
+              <td data-label="Veces" role="cell">{{ grupo.veces }}</td>
+              <td data-label="Última vez" role="cell">{{ grupo.ultimaFecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Motivo" role="cell">
+                @if (grupo.valoradaNoUtil) {
+                  <app-estado-badge dominio="asistente" valor="valorada_no_util" etiqueta="Valorada como no útil" />
+                } @else {
+                  <app-estado-badge dominio="asistente" valor="Sin respuesta" />
+                }
+              </td>
+              <td class="celda-acciones" role="cell">
+                <button type="button" class="btn-primary-trainet" style="width:auto;" (click)="entrenar.emit(grupo.texto)">
+                  <i class="bi bi-mortarboard" aria-hidden="true"></i> Entrenar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="5" class="text-center text-muted py-4">No hay consultas sin respuesta. ¡Triny está al día!</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>

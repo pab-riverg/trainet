@@ -1,0 +1,99 @@
+<div class="modal fade" [id]="idModal" tabindex="-1" aria-labelledby="tituloModalArchivo" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="archivoForm" (ngSubmit)="guardar()">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalArchivo">
+            {{ editando() ? 'Editar archivo' : 'Importar archivo' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="arch-titulo">Título</label>
+            <input type="text" id="arch-titulo" class="form-control" formControlName="titulo" maxlength="255"
+                   [class.is-invalid]="(archivoForm.controls.titulo.invalid && archivoForm.controls.titulo.touched) || erroresCampo()['titulo']" />
+            @if (archivoForm.controls.titulo.invalid && archivoForm.controls.titulo.touched) {
+              <div class="mensaje-error">{{ mensajeControl(archivoForm.controls.titulo) }}</div>
+            } @else if (erroresCampo()['titulo']) {
+              <div class="mensaje-error">{{ erroresCampo()['titulo'] }}</div>
+            }
+          </div>
+
+          <div class="d-flex flex-wrap gap-3 mb-3 filtros-listado">
+            <div>
+              <label class="form-label campo-obligatorio" for="arch-tipo">Tipo</label>
+              <select id="arch-tipo" class="form-select" formControlName="fo_tipo"
+                      [class.is-invalid]="(archivoForm.controls.fo_tipo.invalid && archivoForm.controls.fo_tipo.touched) || erroresCampo()['fo_tipo']">
+                <option [ngValue]="null" disabled>Selecciona un tipo</option>
+                @for (tipo of tipos(); track tipo.id) {
+                  <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }}</option>
+                }
+              </select>
+              @if (archivoForm.controls.fo_tipo.invalid && archivoForm.controls.fo_tipo.touched) {
+                <div class="mensaje-error">{{ mensajeControl(archivoForm.controls.fo_tipo) }}</div>
+              } @else if (erroresCampo()['fo_tipo']) {
+                <div class="mensaje-error">{{ erroresCampo()['fo_tipo'] }}</div>
+              }
+            </div>
+            <div>
+              <label class="form-label campo-obligatorio" for="arch-fecha">Fecha del documento</label>
+              <input type="date" id="arch-fecha" class="form-control" formControlName="fecha_documento"
+                     [class.is-invalid]="(archivoForm.controls.fecha_documento.invalid && archivoForm.controls.fecha_documento.touched) || erroresCampo()['fecha_documento']" />
+              @if (archivoForm.controls.fecha_documento.invalid && archivoForm.controls.fecha_documento.touched) {
+                <div class="mensaje-error">{{ mensajeControl(archivoForm.controls.fecha_documento) }}</div>
+              } @else if (erroresCampo()['fecha_documento']) {
+                <div class="mensaje-error">{{ erroresCampo()['fecha_documento'] }}</div>
+              }
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="arch-descripcion">Descripción (opcional)</label>
+            <textarea id="arch-descripcion" class="form-control" rows="2" formControlName="descripcion"
+                      [class.is-invalid]="erroresCampo()['descripcion']"></textarea>
+            @if (erroresCampo()['descripcion']) {
+              <div class="mensaje-error">{{ erroresCampo()['descripcion'] }}</div>
+            }
+          </div>
+
+          @if (!editando()) {
+            <div class="mb-3">
+              <label class="form-label campo-obligatorio" for="arch-archivo">Archivo (.csv o .xlsx, máx. 10 MB)</label>
+              <input type="file" id="arch-archivo" #archivoInput class="form-control"
+                     accept=".csv,.xlsx" [class.is-invalid]="erroresCampo()['archivo']"
+                     (change)="onArchivoSeleccionado($event)" />
+              @if (archivoSeleccionado(); as archivo) {
+                <div class="form-text">{{ archivo.name }} · {{ formatearTamano(archivo.size) }}</div>
+              }
+              @if (erroresCampo()['archivo']) {
+                <div class="mensaje-error">{{ erroresCampo()['archivo'] }}</div>
+              }
+            </div>
+          } @else {
+            <p class="small text-muted mb-0">El archivo no se puede cambiar; para reemplazarlo importa uno nuevo.</p>
+          }
+
+          @if (errorGeneral()) {
+            <p class="text-danger small mt-3 mb-0" role="alert">{{ errorGeneral() }}</p>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" style="width:auto;" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : (editando() ? 'Guardar cambios' : 'Importar') }}
+          </button>
+          @if (intentoFallido()) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,150 @@
+<div class="modal fade" id="modalDetallePedido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Pedido #{{ pedidoActual()?.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (pedidoActual(); as pedido) {
+
+          <dl class="row mb-3">
+            <dt class="col-sm-3">Recurso</dt>
+            <dd class="col-sm-9">
+              {{ pedido.tipo_nombre || '—' }}
+              @if (pedido.tipo_disponible === true) {
+                <app-estado-badge class="ms-1" dominio="catalogo" valor="Disponible" />
+              } @else if (pedido.tipo_disponible === false) {
+                <app-estado-badge class="ms-1" dominio="catalogo" valor="No disponible" />
+              }
+            </dd>
+
+            <dt class="col-sm-3">Cantidad</dt>
+            <dd class="col-sm-9">{{ pedido.cantidad }}</dd>
+
+            <dt class="col-sm-3">Solicitante</dt>
+            <dd class="col-sm-9">{{ pedido.usuario_nombre || '—' }}</dd>
+
+            <dt class="col-sm-3">Fecha</dt>
+            <dd class="col-sm-9">{{ pedido.fecha_solicitud }}</dd>
+
+            <dt class="col-sm-3">Prioridad</dt>
+            <dd class="col-sm-9">
+              <app-estado-badge dominio="prioridad" [valor]="pedido.prioridad" [etiqueta]="etiquetaPrioridad(pedido.prioridad)" />
+            </dd>
+
+            <dt class="col-sm-3">Estado</dt>
+            <dd class="col-sm-9">
+              <app-estado-badge dominio="recurso" [valor]="pedido.estado" [etiqueta]="etiquetaEstado(pedido.estado)" />
+            </dd>
+
+            <dt class="col-sm-3">Justificación</dt>
+            <dd class="col-sm-9">{{ pedido.justificacion }}</dd>
+
+            <dt class="col-sm-3">Presupuesto estimado</dt>
+            <dd class="col-sm-9">{{ formatearPrecio(pedido.presupuesto_estimado) }}</dd>
+
+            <dt class="col-sm-3">Comentario del encargado</dt>
+            <dd class="col-sm-9">{{ pedido.comentario_encargado || 'Sin comentarios.' }}</dd>
+
+            @if (pedido.archivo_entrega) {
+              <dt class="col-sm-3">Entrega</dt>
+              <dd class="col-sm-9">
+                <a [href]="pedido.archivo_entrega" target="_blank" rel="noopener noreferrer">
+                  <i class="bi bi-box-arrow-up-right"></i> Abrir archivo de entrega
+                </a>
+              </dd>
+            }
+          </dl>
+
+          @if (puedeGestionar() && pedido.estado === 'pendiente') {
+            <div class="border-top pt-3">
+              <h6>Revisar pedido</h6>
+
+              <button type="button"
+                      class="btn-corporate mb-3"
+                      style="width:auto;"
+                      [disabled]="enCurso()"
+                      (click)="confirmarDisponibilidad()">
+                Confirmar disponibilidad
+              </button>
+
+              <div class="mb-3">
+                <label class="form-label" for="pedido-comentario">Comentario (obligatorio para rechazar)</label>
+                <textarea id="pedido-comentario" class="form-control" rows="3" maxlength="255" [formControl]="comentarioControl"></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="pedido-presupuesto">Presupuesto estimado (opcional)</label>
+                <input type="text" appMoneda id="pedido-presupuesto" class="form-control" style="max-width: 220px;" [formControl]="presupuestoControl" />
+                @if (presupuestoControl.invalid) {
+                  <div class="text-danger small">Ingresa un valor de 0 o más.</div>
+                }
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button"
+                        class="btn-primary-trainet"
+                        style="width:auto;"
+                        [disabled]="enCurso() || presupuestoControl.invalid"
+                        (click)="aprobar()">
+                  Aprobar
+                </button>
+                <button type="button"
+                        class="btn-corporate"
+                        style="width:auto;"
+                        [disabled]="enCurso() || presupuestoControl.invalid"
+                        (click)="rechazar()">
+                  Rechazar
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (puedeGestionar() && pedido.estado === 'aprobado') {
+            <div class="border-top pt-3">
+              <h6>Entregar pedido</h6>
+
+              <label class="form-label" for="pedido-archivo">Archivo de entrega (máx. 20 MB)</label>
+              <input type="file"
+                     id="pedido-archivo"
+                     #archivoInput
+                     class="form-control mb-2"
+                     accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.png,.jpg,.jpeg,.zip"
+                     (change)="onArchivoSeleccionado($event)" />
+
+              @if (errorArchivo()) {
+                <p class="text-danger small">{{ errorArchivo() }}</p>
+              }
+
+              <button type="button"
+                      class="btn-primary-trainet"
+                      style="width:auto;"
+                      [disabled]="!archivoSeleccionado() || enCurso()"
+                      (click)="entregar()">
+                {{ enCurso() ? 'Entregando…' : 'Entregar' }}
+              </button>
+            </div>
+          }
+
+          @if (mensaje()) {
+            <p class="text-success small mt-3">{{ mensaje() }}</p>
+          }
+          @if (error()) {
+            <p class="text-danger small mt-3">{{ error() }}</p>
+          }
+
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>

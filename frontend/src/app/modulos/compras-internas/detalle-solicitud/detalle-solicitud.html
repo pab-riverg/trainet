@@ -1,0 +1,161 @@
+<div class="modal fade" id="modalDetalleSolicitud" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Solicitud de compra #{{ solicitudActual()?.id }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+
+        @if (cargandoDetalle()) {
+          <p class="text-muted small" role="status">Cargando el detalle…</p>
+        }
+        @if (errorDetalle()) {
+          <p class="text-danger small">{{ errorDetalle() }}</p>
+        }
+
+        @if (solicitudActual(); as s) {
+
+          <!-- 1. Resumen -->
+          <section>
+            <dl class="row mb-3">
+              <dt class="col-sm-3">Estado</dt>
+              <dd class="col-sm-9"><app-estado-badge dominio="compra" [valor]="s.estado" [etiqueta]="etiquetaEstado(s.estado)" /></dd>
+
+              <dt class="col-sm-3">Solicitante</dt>
+              <dd class="col-sm-9">{{ s.solicitante_nombre || '—' }}</dd>
+
+              <dt class="col-sm-3">Área</dt>
+              <dd class="col-sm-9">{{ s.area }}</dd>
+
+              <dt class="col-sm-3">Fecha</dt>
+              <dd class="col-sm-9">{{ s.fecha_solicitud }}</dd>
+
+              <dt class="col-sm-3">Nota</dt>
+              <dd class="col-sm-9">{{ s.nota || 'Sin nota.' }}</dd>
+
+              <dt class="col-sm-3">Total estimado</dt>
+              <dd class="col-sm-9"><strong>{{ formatearPrecio(s.total_estimado) }}</strong> <span class="text-muted small">(precios de referencia)</span></dd>
+            </dl>
+          </section>
+
+          <!-- 2. Artículos -->
+          <section class="border-top pt-3 mb-3">
+            <h6>Artículos</h6>
+            <div class="table-responsive">
+              <table class="users-table tabla-tarjetas" role="table">
+                <thead role="rowgroup">
+                  <tr role="row">
+                    <th role="columnheader">Artículo</th>
+                    <th role="columnheader">Categoría</th>
+                    <th role="columnheader">Cantidad</th>
+                    <th role="columnheader">Precio</th>
+                    <th role="columnheader">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody role="rowgroup">
+                  @for (item of s.items; track item.id) {
+                    <tr role="row">
+                      <td class="celda-principal" role="cell">
+                        {{ item.articulo_nombre }}
+                        @if (item.justificacion) {
+                          <div class="small text-muted">Justificación: {{ item.justificacion }}</div>
+                        }
+                      </td>
+                      <td data-label="Categoría" role="cell"><i class="bi {{ item.categoria_icono || 'bi-box-seam' }} me-1" aria-hidden="true"></i>{{ item.categoria_nombre }}</td>
+                      <td data-label="Cantidad" role="cell">{{ item.cantidad }}</td>
+                      <td data-label="Precio" role="cell">{{ formatearPrecio(item.precio_unitario) }}</td>
+                      <td data-label="Subtotal" role="cell">{{ formatearPrecio(item.subtotal) }}</td>
+                    </tr>
+                  } @empty {
+                    <tr role="row">
+                      <td role="cell" colspan="5" class="text-center text-muted py-3">Esta solicitud no tiene artículos.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- 3. Decisión inicial -->
+          <section class="border-top pt-3 mb-3">
+            <h6>Decisión</h6>
+
+            @if (s.aprobador_nombre) {
+              <p class="mb-1">
+                {{ s.estado === 'rechazada' ? 'Rechazada' : 'Aprobada' }} por <strong>{{ s.aprobador_nombre }}</strong>
+                @if (s.fecha_decision) {
+                  <span class="text-muted">({{ s.fecha_decision | date: 'dd/MM/yyyy HH:mm' }})</span>
+                }
+              </p>
+              <p class="mb-0"><span class="text-muted">Motivo:</span> {{ s.motivo_decision }}</p>
+            }
+
+            @if (puedeDecidir()) {
+              <app-seccion-observaciones [solicitud]="s" (actualizada)="alActualizar($event)" />
+              <label class="form-label mt-2" for="compra-motivo">Motivo (obligatorio, también al aprobar)</label>
+              <textarea id="compra-motivo" class="form-control mb-2" rows="3" maxlength="1000" [formControl]="motivoControl"></textarea>
+              <div class="d-flex gap-2">
+                <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="aprobar()">Aprobar</button>
+                <button type="button" class="btn-corporate" style="width:auto;" [disabled]="enCurso()" (click)="rechazar()">Rechazar</button>
+              </div>
+            } @else if (esperaDecision()) {
+              <p class="text-muted small">Espera la decisión de un directivo o administrador.</p>
+              <app-seccion-observaciones [solicitud]="s" (actualizada)="alActualizar($event)" />
+            } @else if (!s.aprobador_nombre && s.estado === 'pendiente') {
+              <p class="text-muted small mb-0">Tu solicitud está pendiente de decisión.</p>
+            }
+
+            @if (puedeCancelar()) {
+              <div class="mt-3">
+                @if (confirmandoCancelar()) {
+                  <span class="small me-2">¿Cancelar?</span>
+                  <button type="button" class="btn-corporate" style="width:auto;" [disabled]="enCurso()" (click)="confirmarCancelar()">Sí</button>
+                  <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="noCancelar()">No</button>
+                } @else {
+                  <button type="button" class="btn-corporate" style="width:auto;" (click)="pedirCancelar()">Cancelar solicitud</button>
+                }
+              </div>
+            }
+
+            @if (mensaje()) {
+              <p class="text-success small mt-3 mb-0" role="status">{{ mensaje() }}</p>
+            }
+            @if (error()) {
+              <p class="text-danger small mt-3 mb-0">{{ error() }}</p>
+            }
+          </section>
+
+          <!-- 4. Etapas posteriores a la aprobación: cada una es una sección independiente -->
+          @if (mostrarCotizaciones()) {
+            <app-seccion-cotizaciones
+              [solicitud]="s"
+              [cotizaciones]="cotizaciones()"
+              [cargando]="cargandoCotizaciones()"
+              [errorCarga]="errorCotizaciones()"
+              (cotizacionesCambiaron)="cargarCotizaciones()" />
+
+            <app-seccion-compra [solicitud]="s" [cotizaciones]="cotizaciones()" (actualizada)="alActualizar($event)" />
+          }
+
+          @if (mostrarFacturas()) {
+            <app-seccion-facturas [solicitud]="s" />
+          }
+
+          <app-seccion-entrega [solicitud]="s" (actualizada)="alActualizar($event)" />
+
+          <app-linea-tiempo [eventos]="s.historial ?? []" />
+
+        }
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>

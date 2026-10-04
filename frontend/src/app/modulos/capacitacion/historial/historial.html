@@ -1,0 +1,108 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Historial por empleado</h6>
+  </div>
+
+  <div class="p-3">
+    <label class="form-label" for="historial-empleado">Empleado</label>
+    <select id="historial-empleado" class="form-select" [formControl]="empleadoSeleccionado" style="max-width: 420px;">
+      <option [ngValue]="null">Selecciona un empleado</option>
+      @for (empleado of empleados(); track empleado.id) {
+        <option [ngValue]="empleado.id">{{ empleado.fo_usuario_nombre }}</option>
+      }
+    </select>
+
+    @if (errorEmpleados()) {
+      <p class="text-danger small mt-2">{{ errorEmpleados() }}</p>
+    }
+  </div>
+
+  @if (empleadoSeleccionado.value === null) {
+    <p class="text-center text-muted py-4">Selecciona un empleado.</p>
+  } @else {
+
+    <p class="px-3">Asistió a {{ resumen().asistidas }} de {{ resumen().total }} capacitaciones.</p>
+
+    <h6 class="section-heading px-3">Participaciones</h6>
+
+    @if (cargandoParticipaciones()) {
+      <p class="text-center text-muted py-4">Cargando participaciones…</p>
+    }
+
+    @if (errorParticipaciones()) {
+      <p class="text-center text-danger py-3">{{ errorParticipaciones() }}</p>
+    }
+
+    @if (!cargandoParticipaciones() && !errorParticipaciones()) {
+      <table class="users-table tabla-tarjetas" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            <th role="columnheader">Curso</th>
+            <th role="columnheader">Fecha de inicio</th>
+            <th role="columnheader">Asistió</th>
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          @for (participacion of paginacion.visibles(); track participacion.id) {
+            <tr role="row">
+              <td class="celda-principal" role="cell">{{ participacion.curso_titulo }}</td>
+              <td data-label="Fecha de inicio" role="cell">{{ participacion.fecha_inicio }}</td>
+              <td data-label="Asistió" role="cell">
+                @if (participacion.asistio) {
+                  <app-estado-badge dominio="capacitacion" valor="Sí" />
+                } @else {
+                  <app-estado-badge dominio="capacitacion" valor="No" />
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr role="row">
+              <td role="cell" colspan="3" class="text-center text-muted py-4">
+                Este empleado aún no participa en capacitaciones.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+    }
+
+    <h6 class="section-heading px-3 mt-3">Progreso por curso</h6>
+
+    @if (cargandoProgreso()) {
+      <p class="text-center text-muted py-4">Cargando progreso…</p>
+    }
+
+    @if (errorProgreso()) {
+      <p class="text-center text-danger py-3">{{ errorProgreso() }}</p>
+    }
+
+    @if (!cargandoProgreso() && !errorProgreso()) {
+      @if (progreso().length === 0) {
+        <p class="text-center text-muted py-4">Sin progreso registrado.</p>
+      } @else {
+        <div class="px-3 pb-3">
+          @for (item of progreso(); track item.id) {
+            <div class="mb-3">
+              <div class="d-flex justify-content-between">
+                <span>{{ item.curso_titulo }}</span>
+                <span>{{ item.porcentaje }}%</span>
+              </div>
+              <div class="progress-bar-thin"
+                   role="progressbar"
+                   [attr.aria-valuenow]="item.porcentaje"
+                   aria-valuemin="0"
+                   aria-valuemax="100"
+                   [attr.aria-label]="'Progreso de ' + item.curso_titulo">
+                <div class="progress-bar-fill" [style.width.%]="item.porcentaje"></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+  }
+
+</div>

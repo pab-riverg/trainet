@@ -1,0 +1,54 @@
+<h1 class="section-heading">Capacitación</h1>
+
+@if (cargando()) {
+  <p class="text-center text-muted py-4">Cargando módulo de capacitación…</p>
+}
+
+@if (error()) {
+  <p class="text-center text-danger py-3">{{ error() }}</p>
+}
+
+@if (!cargando() && !error() && moduloId(); as id) {
+
+  <div class="capacitacion-tabs" role="tablist" aria-label="Secciones de capacitación">
+    @for (pestana of pestanas; track pestana.id) {
+      <button type="button"
+              role="tab"
+              class="filter-btn"
+              [class.active]="pestanaActiva() === pestana.id"
+              [attr.aria-selected]="pestanaActiva() === pestana.id"
+              [id]="'tab-' + pestana.id"
+              [attr.aria-controls]="'panel-' + pestana.id"
+              (click)="cambiarPestana(pestana.id)">
+        {{ pestana.etiqueta }}
+      </button>
+    }
+  </div>
+
+  <div class="capacitacion-tabpanel"
+       role="tabpanel"
+       [id]="'panel-' + pestanaActiva()"
+       [attr.aria-labelledby]="'tab-' + pestanaActiva()">
+    @switch (pestanaActiva()) {
+      @case ('cursos') {
+        <app-cursos [moduloId]="id" />
+      }
+      @case ('capacitaciones') {
+        <app-capacitaciones [moduloId]="id" />
+      }
+      @case ('inscripciones') {
+        <app-inscripciones />
+      }
+      @case ('materiales') {
+        <app-materiales />
+      }
+      @case ('evidencias') {
+        <app-evidencias />
+      }
+      @case ('historial') {
+        <app-historial />
+      }
+    }
+  </div>
+
+}

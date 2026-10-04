@@ -1,0 +1,77 @@
+:host {
+  display: inline-block;
+}
+
+/* Mismo alto y radio que los botones existentes; solo cambia el ancho (automático). */
+.menu-boton {
+  width: auto;
+}
+
+.menu-boton:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+.menu-flecha {
+  font-size: .75rem;
+}
+
+.menu-lista {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  padding: .25rem;
+  background: var(--app-superficie);
+  border: 1px solid var(--app-borde);
+  border-radius: 8px;
+  box-shadow: var(--menu-sombra);
+  z-index: 1060;
+}
+
+/* < 992px (breakpoint lg; convención en styles.css): el menú nunca supera la pantalla y, si es muy alto, hace scroll. */
+@media (max-width: 991.98px) {
+  .menu-lista {
+    max-width: calc(100vw - 1rem);
+    max-height: 50vh;
+    max-height: 50dvh;
+    overflow-y: auto;
+  }
+
+  .menu-item {
+    min-height: 40px;
+  }
+}
+
+/* < 576px: el menú ocupa el ancho de pantalla menos .5rem por lado, así nunca se sale por la derecha aunque el botón
+   esté pegado al borde. El !important vence al `left` calculado en línea. */
+@media (max-width: 575.98px) {
+  .menu-lista {
+    left: .5rem !important;
+    right: .5rem;
+    max-width: none;
+  }
+}
+
+.menu-item {
+  padding: .5rem .85rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--app-titulo);
+  cursor: pointer;
+}
+
+.menu-item:hover,
+.menu-item:focus-visible {
+  background: var(--accion-hover-bg);
+  color: var(--accion-hover-color);
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid var(--accion-foco);
+  outline-offset: -2px;
+}

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    ModuloAsistenteVirtual, ConsultaFrecuente, BaseConocimiento,
+    ModuloAsistenteVirtual, CategoriaAsistente, ConsultaFrecuente, BaseConocimiento,
     HistorialConsulta
 )
 
@@ -10,9 +10,14 @@ class ModuloAsistenteVirtualAdmin(admin.ModelAdmin):
     list_display = ('id', 'fo_sistema')
 
 
+@admin.register(CategoriaAsistente)
+class CategoriaAsistenteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre', 'icono', 'orden')
+
+
 @admin.register(ConsultaFrecuente)
 class ConsultaFrecuenteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'pregunta', 'categoria')
+    list_display = ('id', 'pregunta', 'fo_categoria', 'activa')
 
 
 @admin.register(BaseConocimiento)
@@ -22,4 +27,4 @@ class BaseConocimientoAdmin(admin.ModelAdmin):
 
 @admin.register(HistorialConsulta)
 class HistorialConsultaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'fo_usuario', 'pregunta_usuario', 'fo_consulta_frecuente', 'fecha')
+    list_display = ('id', 'fo_usuario', 'pregunta_usuario', 'origen', 'resuelta', 'util', 'fecha')

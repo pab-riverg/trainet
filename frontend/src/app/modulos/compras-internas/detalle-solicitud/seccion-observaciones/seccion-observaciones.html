@@ -1,0 +1,51 @@
+@if (observaciones().length > 0) {
+  <div class="mb-3" role="region" aria-label="Observaciones del encargado">
+    <h6 class="small text-uppercase text-muted mb-2">Observaciones del encargado</h6>
+    <ul class="list-unstyled mb-0">
+      @for (observacion of observaciones(); track observacion.id) {
+        <li class="alert alert-info py-2 mb-2">
+          <i class="bi bi-chat-left-text me-1" aria-hidden="true"></i> {{ observacion.detalle }}
+          <div class="small text-muted">
+            {{ observacion.usuario_nombre || '—' }} · {{ observacion.fecha | date: 'dd/MM/yyyy HH:mm' }}
+          </div>
+        </li>
+      }
+    </ul>
+  </div>
+}
+
+@if (puedeObservar) {
+  <form class="mb-3" [formGroup]="observacionForm" (ngSubmit)="agregar()" #f_observacionForm="ngForm">
+    <p class="nota-obligatorios">* Campo obligatorio</p>
+    <label class="form-label campo-obligatorio" for="observacion-texto">Observación para quien decide</label>
+    <textarea id="observacion-texto" class="form-control" rows="2" [attr.maxlength]="maxCaracteres"
+              formControlName="observacion"
+              [class.is-invalid]="observacionControl.invalid && observacionControl.touched"
+              placeholder="Ej.: hay stock en bodega"></textarea>
+    <div class="d-flex justify-content-between small mt-1">
+      <span class="text-danger">
+        @if (observacionControl.touched && observacionControl.hasError('required')) {
+          La observación no puede estar vacía.
+        }
+        @if (observacionControl.hasError('maxlength')) {
+          Máximo {{ maxCaracteres }} caracteres.
+        }
+      </span>
+      <span class="text-muted" aria-live="polite">{{ longitud() }}/{{ maxCaracteres }}</span>
+    </div>
+
+    <button type="submit" class="btn-corporate mt-2" style="width:auto;" [disabled]="enCurso()">
+      {{ enCurso() ? 'Guardando…' : 'Agregar observación' }}
+    </button>
+          @if (f_observacionForm.submitted && observacionForm.invalid && observacionForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+    @if (exito()) {
+      <p class="text-success small mt-2 mb-0" role="status">{{ exito() }}</p>
+    }
+    @if (error()) {
+      <p class="text-danger small mt-2 mb-0">{{ error() }}</p>
+    }
+  </form>
+}

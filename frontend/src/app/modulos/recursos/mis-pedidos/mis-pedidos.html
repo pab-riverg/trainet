@@ -1,0 +1,167 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Solicitar un recurso</h6>
+  </div>
+
+  <form class="p-3" [formGroup]="pedidoForm" (ngSubmit)="enviar()" #f_pedidoForm="ngForm">
+      <p class="nota-obligatorios">* Campo obligatorio</p>
+
+    <div class="d-flex flex-wrap gap-3 mb-3 filtros-listado">
+      <div>
+        <label class="form-label campo-obligatorio" for="pedido-tipo">Recurso</label>
+        <select id="pedido-tipo" class="form-select" formControlName="fo_tipo_recurso"
+           [class.is-invalid]="pedidoForm.controls.fo_tipo_recurso.invalid && pedidoForm.controls.fo_tipo_recurso.touched">
+          <option [ngValue]="null" disabled>Selecciona un recurso</option>
+          @for (tipo of tipos(); track tipo.id) {
+            <option [ngValue]="tipo.id">{{ tipo.nombre_tipo }} ({{ tipo.disponible ? 'disponible' : 'no disponible' }})</option>
+          }
+        </select>
+      @if (pedidoForm.controls.fo_tipo_recurso.invalid && pedidoForm.controls.fo_tipo_recurso.touched) {
+        <div class="mensaje-error">{{ mensajeControl(pedidoForm.controls.fo_tipo_recurso) }}</div>
+      }
+        @if (errorTipos()) {
+          <div class="text-danger small">{{ errorTipos() }}</div>
+        }
+      </div>
+      <div>
+        <label class="form-label campo-obligatorio" for="pedido-cantidad">Cantidad</label>
+        <input type="number" id="pedido-cantidad" class="form-control" min="1" formControlName="cantidad" style="max-width: 120px;"
+           [class.is-invalid]="pedidoForm.controls.cantidad.invalid && pedidoForm.controls.cantidad.touched" />
+        @if (pedidoForm.controls.cantidad.invalid && pedidoForm.controls.cantidad.touched) {
+          <div class="text-danger small">La cantidad mínima es 1.</div>
+        }
+      </div>
+      <div>
+        <label class="form-label campo-obligatorio" for="pedido-prioridad">Prioridad</label>
+        <select id="pedido-prioridad" class="form-select" formControlName="prioridad"
+           [class.is-invalid]="pedidoForm.controls.prioridad.invalid && pedidoForm.controls.prioridad.touched">
+          @for (prioridad of prioridades; track prioridad.codigo) {
+            <option [ngValue]="prioridad.codigo">{{ prioridad.etiqueta }}</option>
+          }
+        </select>
+      @if (pedidoForm.controls.prioridad.invalid && pedidoForm.controls.prioridad.touched) {
+        <div class="mensaje-error">{{ mensajeControl(pedidoForm.controls.prioridad) }}</div>
+      }
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label campo-obligatorio" for="pedido-justificacion">Justificación</label>
+      <textarea id="pedido-justificacion" class="form-control" rows="3" maxlength="255" formControlName="justificacion"
+           [class.is-invalid]="pedidoForm.controls.justificacion.invalid && pedidoForm.controls.justificacion.touched"></textarea>
+      @if (pedidoForm.controls.justificacion.invalid && pedidoForm.controls.justificacion.touched) {
+        <div class="text-danger small">La justificación es obligatoria (máximo 255 caracteres).</div>
+      }
+    </div>
+
+    <button type="submit" class="btn-primary-trainet" style="width:auto;" [disabled]="enviando()">
+      {{ enviando() ? 'Enviando…' : 'Solicitar' }}
+    </button>
+          @if (f_pedidoForm.submitted && pedidoForm.invalid && pedidoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+
+    @if (exitoEnvio()) {
+      <p class="text-success small mt-2">{{ exitoEnvio() }}</p>
+    }
+    @if (errorEnvio()) {
+      <p class="text-danger small mt-2">{{ errorEnvio() }}</p>
+    }
+  </form>
+
+</div>
+
+<div class="users-table-card mt-3">
+
+  <div class="users-table-header">
+    <h6>Mis pedidos</h6>
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando pedidos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">#</th>
+          <th role="columnheader">Fecha</th>
+          <th role="columnheader">Recurso</th>
+          <th role="columnheader">Cantidad</th>
+          <th role="columnheader">Prioridad</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Acciones</th>
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (pedido of paginacion.visibles(); track pedido.id) {
+          <tr role="row">
+            <td class="celda-principal celda-pedido" role="cell">{{ pedido.id }}</td>
+            <td data-label="Fecha" role="cell">{{ pedido.fecha_solicitud }}</td>
+            <td data-label="Recurso" role="cell">{{ pedido.tipo_nombre || '—' }}</td>
+            <td data-label="Cantidad" role="cell">{{ pedido.cantidad }}</td>
+            <td data-label="Prioridad" role="cell"><app-estado-badge dominio="prioridad" [valor]="pedido.prioridad" [etiqueta]="etiquetaPrioridad(pedido.prioridad)" /></td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="recurso" [valor]="pedido.estado" [etiqueta]="etiquetaEstado(pedido.estado)" /></td>
+            <td class="celda-acciones" role="cell">
+              <app-boton-accion accion="ver"
+                  etiqueta="Ver detalle del pedido"
+                  titulo="Ver"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalDetallePedido"
+                  (click)="verPedido(pedido)" />
+              @if (pedido.estado === 'pendiente') {
+                <app-boton-accion accion="cancelar"
+                    etiqueta="Cancelar pedido"
+                    titulo="Cancelar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCancelarPedido"
+                    (click)="abrirCancelar(pedido)" />
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" colspan="7" class="text-center text-muted py-4">Aún no has solicitado recursos.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<app-detalle-pedido [pedido]="pedidoSeleccionado()" [modoGestion]="false" (actualizado)="cargarPedidos()" />
+
+<!-- Modal confirmación de cancelación -->
+<div class="modal fade" id="modalCancelarPedido" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cancelar pedido</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Cancelar el pedido #{{ pedidoACancelar()?.id }}? Esta acción no se puede deshacer.</p>
+
+        @if (errorCancelar()) {
+          <p class="text-danger small">{{ errorCancelar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Volver</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarCancelar()" [disabled]="cancelando()">
+          {{ cancelando() ? 'Cancelando…' : 'Cancelar pedido' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

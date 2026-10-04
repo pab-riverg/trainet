@@ -1,0 +1,244 @@
+<div class="users-table-card">
+
+  <div class="users-table-header">
+    <h6>Cursos</h6>
+
+    @if (puedeGestionar()) {
+      <button type="button"
+              class="btn-primary-trainet"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCurso"
+              (click)="abrirCrear()">
+        <i class="bi bi-plus-lg"></i> Nuevo curso
+      </button>
+    }
+  </div>
+
+  @if (cargando()) {
+    <p class="text-center text-muted py-4">Cargando cursos…</p>
+  }
+
+  @if (error()) {
+    <p class="text-center text-danger py-3">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    <table class="users-table tabla-tarjetas" role="table">
+      <thead role="rowgroup">
+        <tr role="row">
+          <th role="columnheader">Título</th>
+          <th role="columnheader">Categoría</th>
+          <th role="columnheader">Duración (horas)</th>
+          <th role="columnheader">Estado</th>
+          <th role="columnheader">Video</th>
+          @if (puedeGestionar()) {
+            <th role="columnheader">Acciones</th>
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        @for (curso of paginacion.visibles(); track curso.id) {
+          <tr role="row">
+            <td class="celda-principal" role="cell">{{ curso.titulo }}</td>
+            <td data-label="Categoría" role="cell">{{ curso.categoria_nombre || '—' }}</td>
+            <td data-label="Duración (horas)" role="cell">{{ curso.duracion }}</td>
+            <td data-label="Estado" role="cell"><app-estado-badge dominio="curso" [valor]="curso.estado" [etiqueta]="etiquetaEstado(curso.estado)" /></td>
+            <td data-label="Video" role="cell">
+              @if (curso.video_url) {
+                <app-boton-accion accion="abrir"
+                    etiqueta="Ver video del curso en una pestaña nueva"
+                    titulo="Ver video"
+                    [enlace]="curso.video_url" />
+              } @else {
+                —
+              }
+            </td>
+            @if (puedeGestionar()) {
+              <td class="celda-acciones" role="cell">
+                <app-boton-accion accion="editar"
+                    etiqueta="Editar curso"
+                    titulo="Editar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalCurso"
+                    (click)="abrirEditar(curso)" />
+                <app-boton-accion accion="eliminar"
+                    etiqueta="Eliminar curso"
+                    titulo="Eliminar"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEliminarCurso"
+                    (click)="abrirEliminar(curso)" />
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr role="row">
+            <td role="cell" [attr.colspan]="puedeGestionar() ? 6 : 5" class="text-center text-muted py-4">
+              No hay cursos registrados.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-paginador [total]="paginacion.total()" [pagina]="paginacion.pagina()" (cambioPagina)="paginacion.irA($event)" />
+  }
+
+</div>
+
+<!-- Modal Crear/Editar Curso -->
+<div class="modal fade" id="modalCurso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="cursoForm" (ngSubmit)="guardar()" #f_cursoForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ modoEdicion() ? 'Editar curso' : 'Nuevo curso' }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="nota-obligatorios">* Campo obligatorio</p>
+
+          @if (errorFormulario()) {
+            <p class="text-danger small">{{ errorFormulario() }}</p>
+          }
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="curso-titulo">Título</label>
+            <input type="text" id="curso-titulo" class="form-control" formControlName="titulo" maxlength="255"
+           [class.is-invalid]="cursoForm.controls.titulo.invalid && cursoForm.controls.titulo.touched" />
+            @if (cursoForm.controls.titulo.invalid && cursoForm.controls.titulo.touched) {
+              <div class="text-danger small">El título es obligatorio (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="curso-descripcion">Descripción</label>
+            <input type="text" id="curso-descripcion" class="form-control" formControlName="descripcion" maxlength="255"
+           [class.is-invalid]="cursoForm.controls.descripcion.invalid && cursoForm.controls.descripcion.touched" />
+            @if (cursoForm.controls.descripcion.invalid && cursoForm.controls.descripcion.touched) {
+              <div class="text-danger small">La descripción es obligatoria (máximo 255 caracteres).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="curso-duracion">Duración (horas)</label>
+            <input type="number" id="curso-duracion" class="form-control" formControlName="duracion" min="0"
+           [class.is-invalid]="cursoForm.controls.duracion.invalid && cursoForm.controls.duracion.touched" />
+            @if (cursoForm.controls.duracion.invalid && cursoForm.controls.duracion.touched) {
+              <div class="text-danger small">Ingresa una duración válida (0 o más).</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="curso-estado">Estado</label>
+            <select id="curso-estado" class="form-select" formControlName="estado"
+           [class.is-invalid]="cursoForm.controls.estado.invalid && cursoForm.controls.estado.touched">
+              <option value="" disabled>Selecciona un estado</option>
+              @for (opcion of estadosCurso; track opcion.codigo) {
+                <option [value]="opcion.codigo">{{ opcion.etiqueta }}</option>
+              }
+            </select>
+      @if (cursoForm.controls.estado.invalid && cursoForm.controls.estado.touched) {
+        <div class="mensaje-error">{{ mensajeControl(cursoForm.controls.estado) }}</div>
+      }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="curso-video">Video (URL, opcional)</label>
+            <input type="url" id="curso-video" class="form-control" formControlName="video_url" placeholder="https://..."
+           [class.is-invalid]="cursoForm.controls.video_url.invalid && cursoForm.controls.video_url.touched" />
+            @if (cursoForm.controls.video_url.invalid && cursoForm.controls.video_url.touched) {
+              <div class="text-danger small">La URL debe comenzar con http:// o https://</div>
+            }
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label campo-obligatorio" for="curso-categoria">Categoría</label>
+            <div class="d-flex gap-2">
+              <select id="curso-categoria" class="form-select" formControlName="fo_categoria_curso"
+           [class.is-invalid]="cursoForm.controls.fo_categoria_curso.invalid && cursoForm.controls.fo_categoria_curso.touched">
+                <option [ngValue]="null" disabled>Selecciona una categoría</option>
+                @for (categoria of categorias(); track categoria.id) {
+                  <option [ngValue]="categoria.id">{{ categoria.nombre_categoria }}</option>
+                }
+              </select>
+      @if (cursoForm.controls.fo_categoria_curso.invalid && cursoForm.controls.fo_categoria_curso.touched) {
+        <div class="mensaje-error">{{ mensajeControl(cursoForm.controls.fo_categoria_curso) }}</div>
+      }
+              <app-boton-accion accion="agregar"
+                  etiqueta="Agregar categoría nueva"
+                  titulo="Agregar categoría"
+                  (click)="abrirNuevaCategoria()" />
+            </div>
+
+            @if (errorCategorias()) {
+              <div class="text-danger small">{{ errorCategorias() }}</div>
+            }
+
+            @if (mostrarFormCategoria()) {
+              <div class="mt-2 d-flex flex-wrap gap-2 align-items-end">
+                <div class="flex-grow-1">
+                  <label class="form-label campo-obligatorio" for="curso-categoria-nueva">Nombre de la categoría</label>
+                  <input type="text" id="curso-categoria-nueva" class="form-control" [formControl]="categoriaNuevaControl" [class.is-invalid]="categoriaNuevaControl.invalid && categoriaNuevaControl.touched" />
+      @if (categoriaNuevaControl.invalid && categoriaNuevaControl.touched) {
+        <div class="mensaje-error">{{ mensajeControl(categoriaNuevaControl) }}</div>
+      }
+                  @if (errorCategoriaNueva()) {
+                    <div class="text-danger small">{{ errorCategoriaNueva() }}</div>
+                  }
+                </div>
+                <button type="button"
+                        class="btn-primary-trainet"
+                        style="width:auto;"
+                        [disabled]="guardandoCategoriaNueva()"
+                        (click)="guardarNuevaCategoria()">
+                  {{ guardandoCategoriaNueva() ? 'Guardando…' : 'Guardar' }}
+                </button>
+                <button type="button" class="btn-corporate" style="width:auto;" (click)="cancelarNuevaCategoria()">
+                  Cancelar
+                </button>
+              </div>
+            }
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-primary-trainet" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          @if (f_cursoForm.submitted && cursoForm.invalid && cursoForm.touched) {
+            <span class="aviso-invalido ms-2" role="alert">Revisa los campos marcados</span>
+          }
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal confirmación de eliminación -->
+<div class="modal fade" id="modalEliminarCurso" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar curso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <p>¿Eliminar el curso "{{ cursoAEliminar()?.titulo }}"? Esta acción no se puede deshacer.</p>
+
+        @if (errorEliminar()) {
+          <p class="text-danger small">{{ errorEliminar() }}</p>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-corporate" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-primary-trainet" (click)="confirmarEliminar()" [disabled]="eliminando()">
+          {{ eliminando() ? 'Eliminando…' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

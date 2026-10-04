@@ -1,0 +1,125 @@
+@switch (solicitud().estado) {
+
+  @case ('aprobada') {
+    @if (esSolicitante()) {
+      <section class="border-top pt-3 mb-3" aria-label="Estado de la compra">
+        <p class="mb-0"><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i> Aprobada: en proceso de compra.</p>
+      </section>
+    }
+  }
+
+  @case ('comprada') {
+    <section class="border-top pt-3 mb-3" aria-label="Entrega">
+      <h6>Entrega</h6>
+      @if (puedeEntregar()) {
+        <label class="form-label" for="entrega-nota">Nota (opcional)</label>
+        <textarea id="entrega-nota" class="form-control mb-2" rows="2" maxlength="1000" [formControl]="notaControl"></textarea>
+
+        @if (confirmandoEntrega()) {
+          <span class="small me-2">¿Marcar como entregado?</span>
+          <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="entregar()">
+            {{ enCurso() ? 'Guardando…' : 'Sí' }}
+          </button>
+          <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="confirmandoEntrega.set(false)">No</button>
+        } @else {
+          <button type="button" class="btn-primary-trainet" style="width:auto;" (click)="confirmandoEntrega.set(true)">
+            Marcar como entregado
+          </button>
+        }
+      } @else if (esSolicitante()) {
+        <p class="mb-0"><i class="bi bi-bag-check me-1" aria-hidden="true"></i> Comprada: pendiente de entrega.</p>
+      } @else {
+        <p class="text-muted small mb-0">Pendiente de entrega.</p>
+      }
+      @if (error()) {
+        <p class="text-danger small mt-2 mb-0">{{ error() }}</p>
+      }
+    </section>
+  }
+
+  @case ('entregada') {
+    <section class="border-top pt-3 mb-3" aria-label="Recepción">
+      <h6>Entrega</h6>
+      <p class="mb-2">
+        Entregada el {{ solicitud().fecha_entrega | date: 'dd/MM/yyyy HH:mm' }}
+        por <strong>{{ solicitud().entregado_por_nombre || '—' }}</strong>.
+      </p>
+
+      @if (esSolicitante()) {
+        <div class="caja-recepcion" role="group" aria-label="Confirmación de recepción">
+          <h6 class="mb-2"><i class="bi bi-box-seam me-1" aria-hidden="true"></i> ¿Recibiste tu pedido?</h6>
+
+          @if (reclamando()) {
+            <label class="form-label" for="reclamo-motivo">Cuéntanos qué pasó (opcional)</label>
+            <textarea id="reclamo-motivo" class="form-control mb-2" rows="3" maxlength="1000" [formControl]="motivoControl"></textarea>
+            <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="reportarNoRecibida()">
+              {{ enCurso() ? 'Enviando…' : 'Enviar reclamo' }}
+            </button>
+            <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="reclamando.set(false)">Volver</button>
+          } @else if (confirmandoRecepcion()) {
+            <span class="small me-2">¿Confirmas que recibiste el pedido completo?</span>
+            <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="confirmarRecepcion()">
+              {{ enCurso() ? 'Guardando…' : 'Sí' }}
+            </button>
+            <button type="button" class="btn-corporate ms-1" style="width:auto;" (click)="confirmandoRecepcion.set(false)">No</button>
+          } @else {
+            <div class="d-flex flex-wrap gap-2">
+              <button type="button" class="btn-primary-trainet" style="width:auto;" (click)="confirmandoRecepcion.set(true)">
+                Sí, lo recibí
+              </button>
+              <button type="button" class="btn-corporate" style="width:auto;" (click)="reclamando.set(true)">
+                No lo recibí
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-muted small mb-0">Esperando la confirmación del solicitante.</p>
+      }
+
+      @if (error()) {
+        <p class="text-danger small mt-2 mb-0">{{ error() }}</p>
+      }
+    </section>
+  }
+
+  @case ('en_revision') {
+    <section class="border-top pt-3 mb-3" aria-label="Reclamo en revisión">
+      <div class="alert alert-warning" role="status">
+        <h6 class="alert-heading mb-1">
+          <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+          {{ esSolicitante() ? 'Reportaste que no recibiste el pedido' : 'El solicitante reporta que no recibió el pedido' }}
+        </h6>
+        <div class="small">
+          Reclamo del {{ solicitud().fecha_reclamo | date: 'dd/MM/yyyy HH:mm' }}.
+          Motivo: {{ solicitud().motivo_reclamo || 'No indicó un motivo.' }}
+        </div>
+      </div>
+
+      @if (puedeEntregar()) {
+        <label class="form-label" for="reentrega-nota">Resolución acordada (obligatoria)</label>
+        <textarea id="reentrega-nota" class="form-control mb-2" rows="3" maxlength="1000" [formControl]="notaControl"></textarea>
+        <button type="button" class="btn-primary-trainet" style="width:auto;" [disabled]="enCurso()" (click)="entregarNuevamente()">
+          {{ enCurso() ? 'Guardando…' : 'Marcar como entregado nuevamente' }}
+        </button>
+      } @else if (esSolicitante()) {
+        <p class="mb-0">Tu reclamo está en revisión.</p>
+      }
+
+      @if (error()) {
+        <p class="text-danger small mt-2 mb-0">{{ error() }}</p>
+      }
+    </section>
+  }
+
+  @case ('recibida') {
+    <section class="border-top pt-3 mb-3" aria-label="Recepción confirmada">
+      <h6>Entrega</h6>
+      <p class="mb-0">
+        <i class="bi bi-patch-check me-1" aria-hidden="true"></i>
+        Recibida: el solicitante confirmó la recepción el {{ solicitud().fecha_confirmacion | date: 'dd/MM/yyyy HH:mm' }}.
+      </p>
+    </section>
+  }
+
+}

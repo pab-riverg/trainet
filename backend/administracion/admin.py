@@ -34,7 +34,19 @@ class ModuloActivoAdmin(admin.ModelAdmin):
 
 @admin.register(LogAuditoria)
 class LogAuditoriaAdmin(admin.ModelAdmin):
-    list_display = ('id', 'descripcion', 'fo_usuario', 'fecha_evento')
+    """La bitácora es inmutable: solo lectura, sin agregar, editar ni borrar."""
+    list_display = ('id', 'fecha_hora', 'accion', 'modulo', 'descripcion', 'fo_usuario', 'ip')
+    list_filter = ('accion', 'modulo')
+    search_fields = ('descripcion',)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(Permiso)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     ModuloReportes, TipoReporte, FrecuenciaReporte, Reporte,
-    DatoReporte, ParametroReporte
+    DatoReporte, ParametroReporte, ArchivoImportado
 )
 
 
@@ -12,7 +12,7 @@ class ModuloReportesAdmin(admin.ModelAdmin):
 
 @admin.register(TipoReporte)
 class TipoReporteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nombre_tipo', 'fo_mod_reportes')
+    list_display = ('id', 'nombre_tipo', 'origen', 'fo_mod_reportes')
 
 
 @admin.register(FrecuenciaReporte)
@@ -33,3 +33,8 @@ class DatoReporteAdmin(admin.ModelAdmin):
 @admin.register(ParametroReporte)
 class ParametroReporteAdmin(admin.ModelAdmin):
     list_display = ('id', 'clave_parametro', 'valor_parametro', 'fo_reporte')
+
+
+@admin.register(ArchivoImportado)
+class ArchivoImportadoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'titulo', 'fo_tipo', 'formato', 'fecha_documento', 'filas', 'activo')
