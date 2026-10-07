@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 
-from decouple import config
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +27,8 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = []
+# En producción: dominios separados por coma (ej. mi-sitio.serv00.net). En local con DEBUG=True no hace falta.
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
 
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -144,6 +146,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+# Destino de `collectstatic` (CSS del admin y de DRF); WhiteNoise lo sirve en producción.
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Frontend Angular compilado (contenido de frontend/dist/frontend/browser). Si la carpeta no existe
+# (desarrollo local), WhiteNoise no sirve nada y Angular se ejecuta con `ng serve`.
+FRONTEND_DIR = Path(config('FRONTEND_DIR', default=str(BASE_DIR / 'frontend_dist')))
+WHITENOISE_ROOT = FRONTEND_DIR if FRONTEND_DIR.is_dir() else None
+WHITENOISE_INDEX_FILE = True
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -158,7 +168,10 @@ MAILERS = {
     },
 }
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:4200"]
+# Orígenes con esquema (http/https) separados por coma. Por defecto, solo `ng serve` en local.
+CORS_ALLOWED_ORIGINS = config('CORS_ALLOWED_ORIGINS', default='http://localhost:4200', cast=Csv())
+# Necesario para iniciar sesión en /admin/ por https (ej. https://mi-sitio.serv00.net).
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

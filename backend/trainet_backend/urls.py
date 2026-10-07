@@ -17,9 +17,23 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.http import FileResponse, Http404
+from django.urls import include, path, re_path
+from django.views.decorators.http import require_safe
 from administracion.autenticacion import TokenObtainPairAuditadoView
 from rest_framework_simplejwt.views import TokenRefreshView
+
+
+@require_safe
+def aplicacion_angular(request, ruta=''):
+    """Entrega el index.html de Angular para que el router del frontend resuelva la ruta (/login, /dashboard...)."""
+    index = settings.FRONTEND_DIR / 'index.html'
+    if not index.is_file():
+        raise Http404('El frontend compilado no está desplegado.')
+    respuesta = FileResponse(index.open('rb'), content_type='text/html; charset=utf-8')
+    respuesta['Cache-Control'] = 'no-cache'
+    return respuesta
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -40,6 +54,8 @@ urlpatterns = [
     path('api/', include('busqueda.urls')),
     path('api/token/', TokenObtainPairAuditadoView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Última ruta: cualquier otra dirección la resuelve Angular (excepto la API, el admin y los estáticos).
+    re_path(r'^(?!api/|admin/|static/|media/)(?P<ruta>.*)$', aplicacion_angular),
 ]
 
 if settings.DEBUG:

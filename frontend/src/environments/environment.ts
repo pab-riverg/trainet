@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://127.0.0.1:8000/api'
+  // Ruta relativa: en producción Django sirve el frontend y la API desde el mismo dominio.
+  apiUrl: '/api'
 };
